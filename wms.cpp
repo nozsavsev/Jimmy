@@ -232,7 +232,7 @@ void Locker()
 
         float r_spd = 0.8f;
 
-        sf::RenderWindow window[25];
+        sf::RenderWindow window[50];
 
         agersive_topmost_window_handle_mutex.lock();
         HWND agresive_topmost_backup = agersive_topmost_window_handle;
