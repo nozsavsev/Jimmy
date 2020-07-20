@@ -139,27 +139,12 @@ void Window_Manage_service()
                 Wait_For_Key_Release(WMS_SHOW_KEY);
             }
 
-
-            if (isKeyPressed(WMS_ACTIVATE_KEY))
-            {
-                HWND temp_handle = GetForegroundWindow();
-
-                if (!is_hwnd_protected(temp_handle))
-                {
-                    EnableWindow(temp_handle, true);
-                }
-
-                Wait_For_Key_Release(WMS_ACTIVATE_KEY);
-            }
-
-
             if (isKeyPressed(WMS_MINIMIZE_KEY))
             {
                 HWND temp_handle = GetForegroundWindow();
 
                 if (!is_hwnd_protected(temp_handle))
                 {
-                    EnableWindow(temp_handle, false);
                     ShowWindow(temp_handle, SW_MINIMIZE);
                     ShowWindow(temp_handle, SW_FORCEMINIMIZE);
                 }
@@ -172,13 +157,14 @@ void Window_Manage_service()
 
 std::vector <MONITORINFO> monifo_vector;
 
-BOOL MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
-{
-    MONITORINFO info;
+#include <shellscalingapi.h> //for GetScaleFactorForMonitor
 
+BOOL MonitorEnumProc_(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPARAM dwData)
+{
+    MONITORINFO         info;
     info.cbSize = sizeof(info);
 
-    if (GetMonitorInfo(hMonitor, &info))
+    if (GetMonitorInfoW(hMonitor, &info))
     {
         monifo_vector.push_back({ 0 });
 
@@ -190,7 +176,7 @@ BOOL MonitorEnumProc(HMONITOR hMonitor, HDC hdcMonitor, LPRECT lprcMonitor, LPAR
 
 void Locker()
 {
-    EnumDisplayMonitors(NULL, NULL, MonitorEnumProc, 0);
+    EnumDisplayMonitors(NULL, NULL, MonitorEnumProc_, 0);
 
     pid_protected_mutex.lock();
     pid_protected.push_back(0);

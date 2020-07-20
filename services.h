@@ -32,7 +32,6 @@ void TPR_service();
 #define WMS_SHOW_KEY              'S'
 
 #define WMS_MINIMIZE_KEY          'M'
-#define WMS_ACTIVATE_KEY          'A'
 
 #define WMS_TOPMOST_KEY           'F'
 #define WMS_INFO_TP_KEY           'I'

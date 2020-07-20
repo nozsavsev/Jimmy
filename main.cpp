@@ -1,4 +1,4 @@
-#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
+//#pragma comment(linker, "/SUBSYSTEM:windows /ENTRY:mainCRTStartup")
 
 #include <thread>
 #include "services.h"
@@ -70,8 +70,6 @@ void help()
         L"LALT + I - make active window topmost and transparent (ALPHA = 60)\n"
         L"LALT + B - make active window NO topmost and NO transparent\n\n"
         L"LALT + M - minimize active window\n"
-        L"LALT + A - activate minimized window\n"
-        L"*if the window does not respond to mouse clicks after minimizing\n"
         L"RCONTROL - to get fullscreen topmost window on all monitors\n"
         L" *useful if you need to hide what is happening on the monitor \n"
         L" *Press Q to close this full screen window \n"
