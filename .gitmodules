@@ -1,0 +1,3 @@
+[submodule "Jimmy_Core/external/HotkeyPP"]
+	path = Jimmy_Core/external/HotkeyPP
+	url = https://github.com/nozsavsev/HotkeyPP

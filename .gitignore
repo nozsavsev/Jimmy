@@ -1,0 +1,11 @@
+.vs
+x64/
+.vs/
+Jimmy_Core/Debug
+Jimmy_Core/Release
+Jimmy_Core/x64
+Jimmy_GUI/bin
+Jimmy_GUI/obj
+Debug
+Release
+x64
