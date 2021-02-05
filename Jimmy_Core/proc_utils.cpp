@@ -27,10 +27,8 @@ void KillAll(std::wstring process_name, int actionID, int killReturnValue)
         {
             if (!wcscmp(pe.szExeFile, NameFromPath(process_name).c_str()) && !wcscmp(GetFullPath(pe.th32ProcessID).c_str(), process_name.c_str()))//! TODO process wawre list
             {
-                //if (!wcscmp(pe.szExeFile, L"explorer.exe") && IDOK == MessageBoxA(NULL, "do you really want to KILL \\ PAUSE \\ RESUME explorer.exe\nIt WILL break all!", "Jimmy critical message", MB_OKCANCEL | MB_TOPMOST))
-                //    Process_Tree(pe.th32ProcessID, actionID, killReturnValue);
-                //else
-                Process_Tree(pe.th32ProcessID, actionID, killReturnValue);
+                if (wcscmp(pe.szExeFile, L"explorer.exe"))
+                    Process_Tree(pe.th32ProcessID, actionID, killReturnValue);
             }
 
             bContinue = Process32Next(hSnap, &pe) ? true : false;

@@ -13,11 +13,12 @@ LRESULT CALLBACK JimmyLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 bool Is_Running_As_Admin();
 void Sys_Init(int argc, char** argv);
 void TPR_Init(DWORD pID);
+void WMS_Init(DWORD pID);
 
 void hook_proc_th()
 {
     HHOOK mouse_hook_handle = SetWindowsHookExW(WH_MOUSE_LL, JimmyLowLevelMouseProc, NULL, NULL);
-   
+
     MSG msg;
     while (GetMessageW(&msg, NULL, NULL, NULL))
     {
@@ -46,6 +47,7 @@ int main(int argc, char** argv)
     ));
 
     TPR_Init(GetCurrentThreadId());
+    WMS_Init(GetCurrentThreadId());
 
     mng->Add_Callback([&](int i, WPARAM w, LPARAM l) -> bool { return JimmyLowLevelKeyboardProc(i, w, l); }, 2258);
     HHOOK mouse_hook_handle = SetWindowsHookExW(WH_MOUSE_LL, JimmyLowLevelMouseProc, NULL, NULL);
@@ -53,7 +55,7 @@ int main(int argc, char** argv)
     std::thread th(&hook_proc_th);
 
     mng->Add(HKPP::Hotkey_Deskriptor(
-        { VK_LMENU , 'B'},
+        { VK_LMENU , 'J' },
         Hotkey_Settings_t(
             GetCurrentThreadId(),
             HKPP_BLOCK_INPUT,
@@ -64,7 +66,7 @@ int main(int argc, char** argv)
             {
                 bool local = Jimmy_Global_BlockInjected.load();
                 local = local ? false : true;
-                Jimmy_Global_BlockInjected.store(local);
+                Jimmy_Global_BlockInjected.store(local);                                   
             })
     ));
 
@@ -92,6 +94,47 @@ int main(int argc, char** argv)
 
     return 0;
 }
+
+
+void WMS_Init(DWORD pID)
+{
+    auto mng = HKPP::Hotkey_Manager::Get_Instance();
+    //MINIMIZE
+    mng->Add(HKPP::Hotkey_Deskriptor(
+        { VK_LMENU , 'M' },
+        Hotkey_Settings_t(
+            GetCurrentThreadId(),
+            HKPP_BLOCK_INPUT,
+            HKPP_ALLOW_INJECTED,
+            WM_HKPP_DEFAULT_CALLBACK_MESSAGE,
+            L"minimize current window",
+            [&](void) -> void { ShowWindow(GetForegroundWindow(), SW_FORCEMINIMIZE); })
+    ));
+
+    mng->Add(HKPP::Hotkey_Deskriptor(
+        { VK_LMENU , 'F' },
+        Hotkey_Settings_t(
+            GetCurrentThreadId(),
+            HKPP_BLOCK_INPUT,
+            HKPP_ALLOW_INJECTED,
+            WM_HKPP_DEFAULT_CALLBACK_MESSAGE,
+            L"topmost current window",
+            [&](void) -> void { SetWindowPos(GetForegroundWindow(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE); })
+    ));
+
+    mng->Add(HKPP::Hotkey_Deskriptor(
+        { VK_LMENU , 'B' },
+        Hotkey_Settings_t(
+            GetCurrentThreadId(),
+            HKPP_BLOCK_INPUT,
+            HKPP_ALLOW_INJECTED,
+            WM_HKPP_DEFAULT_CALLBACK_MESSAGE,
+            L"topmost current window",
+            [&](void) -> void { SetWindowPos(GetForegroundWindow(), HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE); })
+    ));
+
+}
+
 
 void TPR_Init(DWORD pID)
 {
