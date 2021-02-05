@@ -18,5 +18,22 @@
     <ClCompile Include="Jimmy_core.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="proc_utils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="path_helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="proc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="npath.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="jimmy_Core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

@@ -180,6 +180,13 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Jimmy_core.cpp" />
+    <ClCompile Include="path_helpers.cpp" />
+    <ClCompile Include="proc_utils.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="jimmy_Core.h" />
+    <ClInclude Include="npath.h" />
+    <ClInclude Include="proc.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
