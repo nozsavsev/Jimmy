@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="cJSON">
+      <UniqueIdentifier>{18dec970-4716-4518-b369-6b701d0d0278}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Jimmy_core.cpp">
@@ -24,6 +27,18 @@
     <ClCompile Include="path_helpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="sys_init.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="external\cJSON\cJSON.c">
+      <Filter>cJSON</Filter>
+    </ClCompile>
+    <ClCompile Include="external\cJSON\cJSON_Utils.c">
+      <Filter>cJSON</Filter>
+    </ClCompile>
+    <ClCompile Include="keyboard_helpers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="proc.h">
@@ -33,6 +48,18 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="jimmy_Core.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="sys_init.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="external\cJSON\cJSON.h">
+      <Filter>cJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="external\cJSON\cJSON_Utils.h">
+      <Filter>cJSON</Filter>
+    </ClInclude>
+    <ClInclude Include="keyboard_helpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

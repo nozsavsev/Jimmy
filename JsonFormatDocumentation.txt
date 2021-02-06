@@ -1,0 +1,35 @@
+    "InputBlocking":"Nothing", //Nothing | All | Keyboard | Mouse
+    "MediaOverlay":"Enabled",
+    "Locker":"Enabled",
+
+    {
+        "Name":"Kill All Instances of current window",
+        "Keys":["LMENU","T"],
+        "BlockInputMode":"HKPP_BLOCK_INPUT",    // HKPP_BLOCK_INPUT | HKPP_ALLOW_INPUT
+        "AllowInjectedI":"HKPP_ALLOW_INJECTED", // HKPP_ALLOW_INJECTED | HKPP_DENY_INJECTED
+        "Actions":
+        [ 
+            {"Action":"KillAll", "Status":"Enabled" ,"Subject":"CurrentWindow", "Type":"Concept"}
+        ]
+    }
+	
+	Action 
+	      KillAll | Pause | Resume
+		      UnderMouseWindow    Concept
+			  CurrentWindow       Concept
+			  Opera.exe           Exename
+			  C:\op.exe           Path
+		  
+		  Minimize | Topmost | Notopmost  //Topmost Remark if you will try topmost already topmosted window jimmy will enable force mode for it
+		      UnderMouseWindow    Concept
+			  CurrentWindow       Concept
+			  Opera.exe           Exename //all windows of the app
+			  C:\op.exe           Path    //all windows of the app
+		  
+		  ToggleInputBlocking
+		      All      Concept
+			  Mouse    Concept
+			  Keyboard Concept
+			  
+		  ToggleLocker
+		  ToggleMediaOverlay

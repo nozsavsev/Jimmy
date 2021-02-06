@@ -4,10 +4,10 @@
 void KillAll(HWND window, int actionID, int killReturnValue)
 {
     if (IsWindow(window))
-        KillAll(GetFullPath(window), actionID, killReturnValue);
+        KillAll(GetFullPath(window),true, actionID, killReturnValue);
 }
 
-void KillAll(std::wstring process_name, int actionID, int killReturnValue)
+void KillAll(std::wstring process_name,bool isPath, int actionID, int killReturnValue)
 {
     bool returnVal = false;
 
@@ -25,10 +25,18 @@ void KillAll(std::wstring process_name, int actionID, int killReturnValue)
 
         while (bContinue)
         {
-            if (!wcscmp(pe.szExeFile, NameFromPath(process_name).c_str()) && !wcscmp(GetFullPath(pe.th32ProcessID).c_str(), process_name.c_str()))//! TODO process wawre list
+            if (!wcscmp(pe.szExeFile, NameFromPath(process_name).c_str()))
             {
-                if (wcscmp(pe.szExeFile, L"explorer.exe"))
-                    Process_Tree(pe.th32ProcessID, actionID, killReturnValue);
+                if (isPath && !wcscmp(GetFullPath(pe.th32ProcessID).c_str(), process_name.c_str()))
+                {
+                    if (wcscmp(pe.szExeFile, L"explorer.exe"))
+                        Process_Tree(pe.th32ProcessID, actionID, killReturnValue);
+                }
+                else if (!wcscmp(NameFromPath(GetFullPath(pe.th32ProcessID)).c_str(), process_name.c_str()))
+                {
+                    if (wcscmp(pe.szExeFile, L"explorer.exe"))
+                        Process_Tree(pe.th32ProcessID, actionID, killReturnValue);
+                }
             }
 
             bContinue = Process32Next(hSnap, &pe) ? true : false;
