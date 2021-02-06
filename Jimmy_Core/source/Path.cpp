@@ -1,4 +1,4 @@
-#include "npath.h"
+#include "Jimmy_Core.h"
 
 std::wstring GetFullPath(HWND window)
 {

@@ -20,16 +20,45 @@
 			  Opera.exe           Exename
 			  C:\op.exe           Path
 		  
+		  KillOnly | PauseOnly | ResumeOnly
+		      UnderMouseWindow    Concept
+			  CurrentWindow       Concept
+			
 		  Minimize | Topmost | Notopmost  //Topmost Remark if you will try topmost already topmosted window jimmy will enable force mode for it
 		      UnderMouseWindow    Concept
 			  CurrentWindow       Concept
-			  Opera.exe           Exename //all windows of the app
-			  C:\op.exe           Path    //all windows of the app
 		  
 		  ToggleInputBlocking
 		      All      Concept
 			  Mouse    Concept
 			  Keyboard Concept
+			  Nothing  Concept //disable all 
 			  
-		  ToggleLocker
-		  ToggleMediaOverlay
+			  
+			  
+			  
+{
+  "InputBlocking":"Nothing",
+  "MediaOverlay":"Enabled",
+  "Locker":"Enabled",
+  
+  "Combinations": 
+  [ 
+    {
+      "Name":"Kill All Instances of current window",
+      "Keys":["LMENU","T"],
+      "BlockInputMode":"HKPP_BLOCK_INPUT",    
+      "AllowInjectedI":"HKPP_ALLOW_INJECTED", 
+      "Actions":
+      [ 
+          {"Action":"KillOnly", "Status":"Enabled" ,"Subject":"CurrentWindow", "Type":"Concept"}
+      ]
+    }
+  ] 
+}
+			  
+			  
+			  
+			  
+			  
+			  

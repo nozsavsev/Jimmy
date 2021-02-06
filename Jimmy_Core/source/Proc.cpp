@@ -1,13 +1,25 @@
-#include "proc.h"
-#include "npath.h"
+#include "Jimmy_Core.h"
 
-void KillAll(HWND window, int actionID, int killReturnValue)
+
+
+void ProcessOnly(HWND window, int actionID, int killReturnValue)
 {
+    DWORD pID = 0;
     if (IsWindow(window))
-        KillAll(GetFullPath(window),true, actionID, killReturnValue);
+    {
+        GetWindowThreadProcessId(window, &pID);
+        ProcessTree(pID, actionID, killReturnValue);
+    }
 }
 
-void KillAll(std::wstring process_name,bool isPath, int actionID, int killReturnValue)
+
+void ProcessAll(HWND window, int actionID, int killReturnValue)
+{
+    if (IsWindow(window))
+        ProcessAll(GetFullPath(window), true, actionID, killReturnValue);
+}
+
+void ProcessAll(std::wstring process_name, bool isPath, int actionID, int killReturnValue)
 {
     bool returnVal = false;
 
@@ -27,15 +39,12 @@ void KillAll(std::wstring process_name,bool isPath, int actionID, int killReturn
         {
             if (!wcscmp(pe.szExeFile, NameFromPath(process_name).c_str()))
             {
-                if (isPath && !wcscmp(GetFullPath(pe.th32ProcessID).c_str(), process_name.c_str()))
+                if (wcscmp(pe.szExeFile, L"explorer.exe"))
                 {
-                    if (wcscmp(pe.szExeFile, L"explorer.exe"))
-                        Process_Tree(pe.th32ProcessID, actionID, killReturnValue);
-                }
-                else if (!wcscmp(NameFromPath(GetFullPath(pe.th32ProcessID)).c_str(), process_name.c_str()))
-                {
-                    if (wcscmp(pe.szExeFile, L"explorer.exe"))
-                        Process_Tree(pe.th32ProcessID, actionID, killReturnValue);
+                    if (isPath && !wcscmp(GetFullPath(pe.th32ProcessID).c_str(), process_name.c_str()))
+                        ProcessTree(pe.th32ProcessID, actionID, killReturnValue);
+                    else if (!wcscmp(NameFromPath(GetFullPath(pe.th32ProcessID)).c_str(), process_name.c_str()))
+                        ProcessTree(pe.th32ProcessID, actionID, killReturnValue);
                 }
             }
 
@@ -44,7 +53,7 @@ void KillAll(std::wstring process_name,bool isPath, int actionID, int killReturn
     }
 }
 
-bool Process_Tree(DWORD pID, int actionID, int killReturnValue, HANDLE hSnap)
+bool ProcessTree(DWORD pID, int actionID, int killReturnValue, HANDLE hSnap)
 {
     bool returnVal = false;
 
@@ -61,7 +70,7 @@ bool Process_Tree(DWORD pID, int actionID, int killReturnValue, HANDLE hSnap)
         while (bContinue)
         {
             if (pe.th32ParentProcessID == pID)
-                Process_Tree(pe.th32ProcessID, actionID, killReturnValue);//kill child proc tree
+                ProcessTree(pe.th32ProcessID, actionID, killReturnValue);//kill child proc tree
 
             bContinue = Process32Next(hSnap, &pe) ? true : false;
         }

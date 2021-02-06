@@ -18,48 +18,42 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Jimmy_core.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="proc_utils.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="path_helpers.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="sys_init.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="external\cJSON\cJSON.c">
       <Filter>cJSON</Filter>
     </ClCompile>
     <ClCompile Include="external\cJSON\cJSON_Utils.c">
       <Filter>cJSON</Filter>
     </ClCompile>
-    <ClCompile Include="keyboard_helpers.cpp">
+    <ClCompile Include="source\Keyboard_Convertors.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Path.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Proc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Sys_Init.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Jimmy_Core.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Json_Parcers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="media_tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="proc.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="npath.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="jimmy_Core.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="sys_init.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="external\cJSON\cJSON.h">
       <Filter>cJSON</Filter>
     </ClInclude>
     <ClInclude Include="external\cJSON\cJSON_Utils.h">
       <Filter>cJSON</Filter>
     </ClInclude>
-    <ClInclude Include="keyboard_helpers.h">
+    <ClInclude Include="include\Jimmy_Core.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
