@@ -1,3 +1,6 @@
 [submodule "Jimmy_Core/external/HotkeyPP"]
 	path = Jimmy_Core/external/HotkeyPP
 	url = https://github.com/nozsavsev/HotkeyPP
+[submodule "Jimmy_Core/external/cJSON"]
+	path = Jimmy_Core/external/cJSON
+	url = https://github.com/DaveGamble/cJSON.git
