@@ -1,60 +1,102 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "Jimmy_Core.h"
 
-void MouseHook_proc_helper_thread(); //local 
-void helper_thread();                //local 
+void MouseHook_proc_helper_thread();
+void helper_thread();
+
 std::atomic<JimmyGlobalProps_t> Jimmy_Global_properties;
 
-int main(int argc, char** argv)
+std::atomic<DWORD> th_id = 0;
+
+void log(const char* log_str, ...)
 {
-    Sys_Init(argc, argv);
-    LoadConfig();
-    //default exit combination
-    auto mng = HKPP::Hotkey_Manager::Get_Instance();
-    mng->Add(HKPP::Hotkey_Deskriptor({ VK_LMENU , 'Q' }, Hotkey_Settings_t(GetCurrentThreadId(), HKPP_BLOCK_INPUT, HKPP_ALLOW_INJECTED, WM_HKPP_DEFAULT_CALLBACK_MESSAGE, L"Exit jimmy", [&](Hotkey_Deskriptor d) -> void {Enable_Overlay(); exit(0); })));
+    static std::mutex log_mutex;
+    static FILE* flog = NULL;
 
-    std::thread hook_helper_thread(&MouseHook_proc_helper_thread);
-    std::thread helper_thread(&helper_thread);
+    static char buffer[80];
+    static time_t rawtime;
+    static struct tm* timeinfo;
 
-    MSG msg;
-    while (GetMessageW(&msg, NULL, NULL, NULL))
+    log_mutex.lock();
+
+    if (!flog)
     {
-        TranslateMessage(&msg);
+        fopen_s(&flog, "jimmy_log.txt", "wt");
 
-        if (msg.message == WM_HKPP_DEFAULT_CALLBACK_MESSAGE)
-        {
-            if (msg.lParam)
-            {
-                Hotkey_Deskriptor* dsk = (Hotkey_Deskriptor*)msg.lParam;
-                dsk->settings.user_callback(*dsk);
-                delete dsk;
-            }
-        }
-
-        DispatchMessageW(&msg);
+        if (!flog)
+            flog = stdout;
     }
 
-    return 0;
+
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer, sizeof(buffer), "%d-%m-%Y %H:%M:%S", timeinfo);
+
+    fprintf(flog, "%s:", buffer);
+    va_list argptr;
+    va_start(argptr, log_str);
+    vfprintf(flog, log_str, argptr);
+    va_end(argptr);
+
+    log_mutex.unlock();
 }
 
 
+int main(int argc, char** argv)
+{
+    log("starting Jimmy\n");
+
+    Sys_Init(argc, argv);
+    
+    if (LoadConfig(0))
+        log("confug loaded\n");
+
+
+    std::thread hook_helper_thread(&MouseHook_proc_helper_thread);
+    auto mng = HKPP::Hotkey_Manager::Get_Instance();
+    mng->Add_Hotkey(HKPP::Hotkey_Deskriptor({ VK_LMENU , 'Q' }, Hotkey_Settings_t(
+        L"Exit jimmy",
+        [&](Hotkey_Deskriptor d) -> void {Enable_Overlay(); exit(0); },
+        NULL,
+        HKPP_BLOCK_INPUT,
+        HKPP_DENY_INJECTED)));
+
+    helper_thread();
+
+    hook_helper_thread.join();
+    return 0;
+}
 
 void MouseHook_proc_helper_thread()
 {
-    HKPP::Hotkey_Manager::Get_Instance()->Add_Callback([&](int i, WPARAM w, LPARAM l) -> bool { return JimmyLowLevelKeyboardProc(i, w, l); }, 2258);
+
+    th_id.store(GetCurrentThreadId());
+
+    HKPP::Hotkey_Manager* PInst = HKPP::Hotkey_Manager::Get_Instance();
+
+
+    log("setting up mouse hook\n");
+    size_t callback_uuid = PInst->Add_Callback([&](int i, WPARAM w, LPARAM l) -> bool { return JimmyLowLevelKeyboardProc(i, w, l); });
     HHOOK mouse_hook_handle = SetWindowsHookExW(WH_MOUSE_LL, JimmyLowLevelMouseProc, NULL, NULL);
+    log("mouse hook OK\n");
 
     MSG msg;
     while (GetMessageW(&msg, NULL, NULL, NULL))
     {
         TranslateMessage(&msg);
+        if (msg.message == WM_QUIT) break;
         DispatchMessageW(&msg);
     }
 
+    PInst->Remove_Callback(callback_uuid);
+    callback_uuid = 0;
     UnhookWindowsHookEx(mouse_hook_handle);
 }
 
 void helper_thread()
 {
+    log("Helper started\n");
+
     Enable_Overlay();
 
     float volNowOld = Get_Volume();
@@ -62,7 +104,7 @@ void helper_thread()
 
     while (1)
     {
-        if (Jimmy_Global_properties.load().MediaOverlayServiceEnabled)
+        if (Jimmy_Global_properties.load().MediaOverlayServiceTrue)
         {
             if (volNowOld != Get_Volume())
             {
@@ -76,7 +118,6 @@ void helper_thread()
             IsHidden = false;
             Enable_Overlay();
         }
-        Sleep(10);
     }
 }
 
@@ -110,4 +151,62 @@ LRESULT CALLBACK JimmyLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lPar
     }
 
     return false;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+void WatchDirectory(LPTSTR lpDir)
+{
+    DWORD dwWaitStatus;
+    HANDLE dwChangeHandles[2];
+    TCHAR lpDrive[4];
+    TCHAR lpFile[_MAX_FNAME];
+    TCHAR lpExt[_MAX_EXT];
+
+    _tsplitpath_s(lpDir, lpDrive, 4, NULL, 0, lpFile, _MAX_FNAME, lpExt, _MAX_EXT);
+
+    lpDrive[2] = (TCHAR)'\\';
+    lpDrive[3] = (TCHAR)'\0';
+
+    // Watch the directory for file creation and deletion. 
+
+    dwChangeHandles[0] = FindFirstChangeNotification(
+        lpDir,                         // directory to watch 
+        FALSE,                         // do not watch subtree 
+        FILE_NOTIFY_CHANGE_FILE_NAME); // watch file name changes 
+
+    if (dwChangeHandles[0] == INVALID_HANDLE_VALUE)
+    {
+        printf("\n ERROR: FindFirstChangeNotification function failed.\n");
+        ExitProcess(GetLastError());
+    }
+
+
+    dwChangeHandles[1] = FindFirstChangeNotification(L"C:\\Users\\nozsavsev\\Desktop", FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
+
+    //    switch (dwWaitStatus)
+    //    {
+    //    case WAIT_OBJECT_0:
+    //        printf("changed");
+    //        break;
+    //
+    //    case WAIT_TIMEOUT:
+    //        break;
+    //
+    //    default:
+    //        break;
+    //    }
 }

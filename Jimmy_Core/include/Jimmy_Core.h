@@ -14,6 +14,7 @@ using namespace HKPP::extra;
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
 #include <tlhelp32.h>
+#include <stdarg.h>
 
 //Media_Tools.cpp
 float Get_Volume();
@@ -42,14 +43,14 @@ std::wstring NameFromPath(std::wstring path);
 void ProcessAll(HWND window, int actionID = PT_KILL, int killReturnValue = -1);
 void ProcessAll(std::wstring process_name, bool isPath, int actionID = PT_KILL, int killReturnValue = -1);
 bool Process(DWORD pID, int actionID = PT_KILL, int killReturnValue = -1);
-bool ProcessTree(DWORD pID, int actionID = PT_KILL, int killReturnValue = -1, HANDLE hSnap = NULL);
+bool ProcessTree(DWORD pID, int actionID = PT_KILL, int killReturnValue = -1, HANDLE hSnap = nullptr, VectorEx <DWORD>* pid_vec = nullptr);
 void ProcessOnly(HWND window, int actionID = PT_KILL, int killReturnValue = -1);
 
 
 struct JimmyGlobalProps_t
 {
-    bool MediaOverlayServiceEnabled;
-    bool LockerServiceEnabled;
+    bool MediaOverlayServiceTrue;
+    bool LockerServiceTrue;
     bool BlockInjected_Mouse;
     bool BlockInjected_Keyboard;
 };
@@ -65,4 +66,6 @@ LRESULT CALLBACK JimmyLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 int GetHKPP_ConstantFromString(char* str);
 void StandartHotkeyHandler(std::wstring command_str);
 void standartCommandParcer(cJSON* command);
-bool LoadConfig();
+bool LoadConfig(DWORD tID = GetCurrentThreadId());
+
+void log(const char* log_str, ...);

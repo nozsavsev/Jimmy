@@ -18,6 +18,7 @@ void StandartHotkeyHandler(std::wstring command_str)
 
 void standartCommandParcer(cJSON* command)
 {
+
     cJSON* action = cJSON_GetObjectItem(command, "Action");
     cJSON* status = cJSON_GetObjectItem(command, "Status");
     cJSON* subject = cJSON_GetObjectItem(command, "Subject");
@@ -90,13 +91,13 @@ void standartCommandParcer(cJSON* command)
             else if (!strcmp(action->valuestring, "Minimize"))
                 ShowWindow(window, SW_FORCEMINIMIZE);
         }
-    }                                 
+    }
 
     else if (!strcmp(action->valuestring, "ToggleInputBlocking"))
     {
         JimmyGlobalProps_t props = Jimmy_Global_properties.load();
 
-        if (!strcmp(subject->valuestring, "All"))                            
+        if (!strcmp(subject->valuestring, "All"))
         {
             props.BlockInjected_Keyboard = props.BlockInjected_Keyboard ? false : true;
             props.BlockInjected_Mouse = props.BlockInjected_Mouse ? false : true;
@@ -114,22 +115,26 @@ void standartCommandParcer(cJSON* command)
 
         Jimmy_Global_properties.store(props);
     }
+    else
+        log("command not found '%s'\n", action->valuestring);
 }
 
-bool LoadConfig()
+bool LoadConfig(DWORD tID)
 {
-
-    printf("\n");
     cJSON* config = NULL;
     Hotkey_Manager* mng = HKPP::Hotkey_Manager::Get_Instance();
+    static VectorEx <size_t> uuid_list;
+
+    uuid_list.foreach([&](size_t uuid) -> void {mng->Remove_Hotkey(uuid); });
+    uuid_list.clear();
 
     {
-        char* config_str;
-        FILE* fp = NULL;
+        char* config_str = nullptr;
+        FILE* fp = nullptr;
         size_t size = 0;
 
-        _wfopen_s(&fp, L"C:\\Users\\nozsavsev\\Desktop\\Jimmy_config.json", L"rb");
-                                                                                              
+        _wfopen_s(&fp, L"C:\\Users\\nozsavsev\\Desktop\\Jimmy_Config.json", L"rb");
+
         if (fp)
         {
             fseek(fp, 0, SEEK_END);
@@ -149,55 +154,71 @@ bool LoadConfig()
 
     if (config)
     {
-        cJSON* combinations = cJSON_GetObjectItem(config, "Combinations");
+        cJSON* Combinations = cJSON_GetObjectItem(config, "Combinations");
         cJSON* InputBlocking = cJSON_GetObjectItem(config, "InputBlocking");
         cJSON* MediaOverlay = cJSON_GetObjectItem(config, "MediaOverlay");
         cJSON* Locker = cJSON_GetObjectItem(config, "Locker");
+        cJSON* AwareList = cJSON_GetObjectItem(config, "Aware");
 
-        if (!combinations || !InputBlocking || !MediaOverlay || !Locker)
+        if (!Combinations || !InputBlocking || !MediaOverlay || !Locker || !AwareList)
         {
-            printf("broken config - combination array not found\n");
+            log("broken config - critical pole not found\nCombinations %s\nInputBlocking %s\nMediaOverlay %s\nLocker %s\nAwareList %s\n",
+                Combinations ? "OK" : "NO",
+                InputBlocking ? "OK" : "NO",
+                MediaOverlay ? "OK" : "NO",
+                Locker ? "OK" : "NO",
+                AwareList ? "OK" : "NO");
+
             return false;
         }
+
+        for (int i = 0; i < cJSON_GetArraySize(AwareList); i++)
+        {
+            cJSON* subitem = cJSON_GetArrayItem(AwareList, i);
+            //!TODO aware list
+            if (!subitem)
+                continue;
+        }
+
         JimmyGlobalProps_t props = Jimmy_Global_properties.load();
-        
+
         //input filters                                                                   
         if (!strcmp(InputBlocking->valuestring, "All"))
             props.BlockInjected_Keyboard = props.BlockInjected_Mouse = true;
-        
+
         else if (!strcmp(InputBlocking->valuestring, "Mouse"))
             props.BlockInjected_Mouse = true;
-        
+
         else if (!strcmp(InputBlocking->valuestring, "Keyboard"))
             props.BlockInjected_Keyboard = true;
-        
+
         else if (!strcmp(InputBlocking->valuestring, "Nothing"))
             props.BlockInjected_Keyboard = props.BlockInjected_Mouse = false;
-        
+
         //media overlay
-        if (!strcmp(MediaOverlay->valuestring, "Enabled"))
-            props.MediaOverlayServiceEnabled = true;
-        
-        else if (!strcmp(MediaOverlay->valuestring, "Disabled"))
-            props.MediaOverlayServiceEnabled = false;
-        
+        if (!strcmp(MediaOverlay->valuestring, "True"))
+            props.MediaOverlayServiceTrue = true;
+
+        else if (!strcmp(MediaOverlay->valuestring, "False"))
+            props.MediaOverlayServiceTrue = false;
+
         //locker
-        if (!strcmp(Locker->valuestring, "Enabled"))
-            props.LockerServiceEnabled = true;
-        
-        else if (!strcmp(Locker->valuestring, "Disabled"))
-            props.LockerServiceEnabled = false;
-        
+        if (!strcmp(Locker->valuestring, "True"))
+            props.LockerServiceTrue = true;
+
+        else if (!strcmp(Locker->valuestring, "False"))
+            props.LockerServiceTrue = false;
+
         Jimmy_Global_properties.store(props);
 
 
-        for (int i = 0; i < cJSON_GetArraySize(combinations); i++)
+        for (int i = 0; i < cJSON_GetArraySize(Combinations); i++)
         {
-            cJSON* subitem = cJSON_GetArrayItem(combinations, i);
+            cJSON* subitem = cJSON_GetArrayItem(Combinations, i);
 
             if (!subitem)
             {
-                printf("broken config - combination %d\n", i);
+                log("broken config - combination %d\n", i);
                 continue;
             }
             cJSON* Name = cJSON_GetObjectItem(subitem, "Name");
@@ -208,14 +229,12 @@ bool LoadConfig()
 
             if (!BlockInputMode || !AllowInjectedI || !Keys || !Actions)
             {
-                printf("broken config - combination %d\n", i);
+                log("broken config - combination %d\n", i);
                 continue;
             }
 
-            printf("%s\n", Name->valuestring);
-
             Hotkey_Settings_t settings;
-            settings.Thread_Id = GetCurrentThreadId();
+            settings.Thread_Id = tID;
             settings.Msg = WM_HKPP_DEFAULT_CALLBACK_MESSAGE;
 
             char* strin = cJSON_Print(Actions);
@@ -224,7 +243,7 @@ bool LoadConfig()
 
             settings.Block_Input = GetHKPP_ConstantFromString(BlockInputMode->valuestring);
             settings.Allow_Injected = GetHKPP_ConstantFromString(AllowInjectedI->valuestring);;
-            settings.user_callback = [&](Hotkey_Deskriptor desk) -> void {StandartHotkeyHandler(desk.settings.name); };
+            settings.user_callback = [&](Hotkey_Deskriptor desk) -> void { StandartHotkeyHandler(desk.settings.name); };
 
             VectorEx <key_deskriptor> keys;
 
@@ -239,14 +258,11 @@ bool LoadConfig()
                 }
             }
             if (keys.size())
-                mng->Add(Hotkey_Deskriptor(keys, settings));
+                uuid_list.push_back(mng->Add_Hotkey(Hotkey_Deskriptor(keys, settings)));
         }
     }
     else
-    {
-        printf("invalid json\n");
-
-    }
+    log("invalid json\n");
 
     if (config)
         cJSON_Delete(config);

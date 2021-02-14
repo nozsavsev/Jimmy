@@ -8,14 +8,12 @@ void ProcessOnly(HWND window, int actionID, int killReturnValue)
         GetWindowThreadProcessId(window, &pID);
         ProcessTree(pID, actionID, killReturnValue);
     }
-
-    printf("\n\n");
 }
 
 void ProcessAll(HWND window, int actionID, int killReturnValue)
 {
     if (IsWindow(window))
-        ProcessAll(GetFullPath(window), true, actionID, killReturnValue);
+        ProcessAll(NameFromPath(GetFullPath(window)), false, actionID, killReturnValue);
 }
 
 void ProcessAll(std::wstring process_name, bool isPath, int actionID, int killReturnValue)
@@ -36,32 +34,37 @@ void ProcessAll(std::wstring process_name, bool isPath, int actionID, int killRe
 
         while (bContinue)
         {
-            if (!wcscmp(pe.szExeFile, NameFromPath(process_name).c_str()))
+            if (isPath)
             {
-                if (wcscmp(pe.szExeFile, L"explorer.exe"))
-                {
-                    if (isPath && !wcscmp(GetFullPath(pe.th32ProcessID).c_str(), process_name.c_str()))
-                        ProcessTree(pe.th32ProcessID, actionID, killReturnValue);
-                    else if (!wcscmp(NameFromPath(GetFullPath(pe.th32ProcessID)).c_str(), process_name.c_str()))
-                        ProcessTree(pe.th32ProcessID, actionID, killReturnValue);
-                }
+                if (!_wcsicmp(GetFullPath(pe.th32ProcessID).c_str(), process_name.c_str()))
+                    ProcessTree(pe.th32ProcessID, actionID, killReturnValue);
+            }
+            else
+            {
+                if (!_wcsicmp(pe.szExeFile, process_name.c_str()))
+                    ProcessTree(pe.th32ProcessID, actionID, killReturnValue);
+
             }
 
             bContinue = Process32Next(hSnap, &pe) ? true : false;
         }
     }
-
-    printf("\n\n");
 }
 
-bool ProcessTree(DWORD pID, int actionID, int killReturnValue, HANDLE hSnap)
+bool ProcessTree(DWORD pID, int actionID, int killReturnValue, HANDLE hSnap, VectorEx <DWORD>* pid_vec)
 {
+    bool first = false;
     bool returnVal = false;
-
     PROCESSENTRY32W pe;
     pe.dwSize = sizeof(PROCESSENTRY32);
 
-    if (!hSnap && !(hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0))) //if (hsnap not exist) -> try to create it -> if (still not exist) -> then exit 
+    if (pid_vec == nullptr)
+    {
+        pid_vec = new VectorEx <DWORD>;
+        first = true;
+    }
+
+    if (hSnap == nullptr && (hSnap = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0)) == nullptr) //if (hsnap not exist) -> try to create it -> if (still not exist) -> then exit 
         return false;
 
     if (Process32First(hSnap, &pe))
@@ -71,31 +74,55 @@ bool ProcessTree(DWORD pID, int actionID, int killReturnValue, HANDLE hSnap)
         while (bContinue)
         {
             if (pe.th32ParentProcessID == pID)
-                ProcessTree(pe.th32ProcessID, actionID, killReturnValue);//kill child proc tree
+                ProcessTree(pe.th32ProcessID, actionID, killReturnValue, hSnap, pid_vec);//kill child proc tree
 
             bContinue = Process32Next(hSnap, &pe) ? true : false;
         }
 
-        returnVal = Process(pID, actionID, killReturnValue);//kill parent
+        if (!pid_vec->Contains(pID))
+            pid_vec->push_back(pID);
     }
-    return returnVal;
+
+    if (first)
+    {
+        pid_vec->foreach([&](DWORD pid_l)-> void { returnVal |= !Process(pid_l, actionID, killReturnValue); });
+        delete pid_vec;
+    }
+
+    return !returnVal;
 }
 
 bool Process(DWORD pID, int actionID, int killReturnValue)
 {
     bool result = false;
 
+
+    //if (process_aware_list == GetFullPath(pID).c_str())
+    //{
+    //    log("canceled reason:aware list");
+    //    return false;
+    //}
+
     if (actionID == PT_PAUSE)
+    {
         result = DebugActiveProcess(pID);
-
+        log("Process -> pID:%d Path:'%ws' ActionID:%d status: %s\n", pID, GetFullPath(pID).c_str(), actionID, result ? "OK" : "ERROR");
+    }
     if (actionID == PT_RESUME)
+    {
         result = DebugActiveProcessStop(pID);
-
+        log("Process -> pID:%d Path:'%ws' ActionID:%d status: %s\n", pID, GetFullPath(pID).c_str(), actionID, result ? "OK" : "ERROR");
+    }
     if (actionID == PT_KILL)
     {
-        HANDLE phandle = OpenProcess(PROCESS_TERMINATE, FALSE, pID);
-        if (TerminateProcess(phandle, killReturnValue) != TRUE)
-            printf("%d error %d\n", pID, GetLastError());
+        HANDLE phandle = OpenProcess(PROCESS_TERMINATE | PROCESS_ALL_ACCESS, FALSE, pID);
+
+        result = TerminateProcess(phandle, killReturnValue);
+
+        if (phandle)
+            CloseHandle(phandle);
+
+        log("Process -> pID:%d Path:'%ws' ActionID:%d status: %s\n", pID, GetFullPath(pID).c_str(), actionID, result ? "OK" : "ERROR");
     }
 
     return result;
