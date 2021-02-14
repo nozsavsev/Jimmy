@@ -42,7 +42,7 @@
     <ClCompile Include="source\Json_Parcers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="media_tools.cpp">
+    <ClCompile Include="source\Media_Tools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

@@ -1,7 +1,5 @@
 #include "Jimmy_Core.h"
 
-
-
 void ProcessOnly(HWND window, int actionID, int killReturnValue)
 {
     DWORD pID = 0;
@@ -10,8 +8,9 @@ void ProcessOnly(HWND window, int actionID, int killReturnValue)
         GetWindowThreadProcessId(window, &pID);
         ProcessTree(pID, actionID, killReturnValue);
     }
-}
 
+    printf("\n\n");
+}
 
 void ProcessAll(HWND window, int actionID, int killReturnValue)
 {
@@ -51,6 +50,8 @@ void ProcessAll(std::wstring process_name, bool isPath, int actionID, int killRe
             bContinue = Process32Next(hSnap, &pe) ? true : false;
         }
     }
+
+    printf("\n\n");
 }
 
 bool ProcessTree(DWORD pID, int actionID, int killReturnValue, HANDLE hSnap)
@@ -85,13 +86,17 @@ bool Process(DWORD pID, int actionID, int killReturnValue)
     bool result = false;
 
     if (actionID == PT_PAUSE)
-        result = DebugActiveProcess(pID) ? true : false;
+        result = DebugActiveProcess(pID);
 
     if (actionID == PT_RESUME)
-        result = DebugActiveProcessStop(pID) ? true : false;
+        result = DebugActiveProcessStop(pID);
 
     if (actionID == PT_KILL)
-        result = TerminateProcess(OpenProcess(PROCESS_TERMINATE, FALSE, pID), killReturnValue) ? true : false;
+    {
+        HANDLE phandle = OpenProcess(PROCESS_TERMINATE, FALSE, pID);
+        if (TerminateProcess(phandle, killReturnValue) != TRUE)
+            printf("%d error %d\n", pID, GetLastError());
+    }
 
     return result;
 }

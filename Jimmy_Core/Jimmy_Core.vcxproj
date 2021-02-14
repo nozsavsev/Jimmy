@@ -191,10 +191,10 @@
   <ItemGroup>
     <ClCompile Include="external\cJSON\cJSON.c" />
     <ClCompile Include="external\cJSON\cJSON_Utils.c" />
-    <ClCompile Include="media_tools.cpp" />
     <ClCompile Include="source\Jimmy_Core.cpp" />
     <ClCompile Include="source\Json_Parcers.cpp" />
     <ClCompile Include="source\Keyboard_Convertors.cpp" />
+    <ClCompile Include="source\Media_Tools.cpp" />
     <ClCompile Include="source\Path.cpp" />
     <ClCompile Include="source\Proc.cpp" />
     <ClCompile Include="source\Sys_Init.cpp" />

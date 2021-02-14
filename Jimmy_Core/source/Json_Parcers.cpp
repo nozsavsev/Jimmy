@@ -128,7 +128,7 @@ bool LoadConfig()
         FILE* fp = NULL;
         size_t size = 0;
 
-        _wfopen_s(&fp, L"Jimmy_config.json", L"rb");
+        _wfopen_s(&fp, L"C:\\Users\\nozsavsev\\Desktop\\Jimmy_config.json", L"rb");
                                                                                               
         if (fp)
         {
