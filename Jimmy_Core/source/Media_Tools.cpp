@@ -6,7 +6,15 @@ void Disable_Overlay()
 
     while ((hwndHost = FindWindowExW(0, hwndHost, L"NativeHWNDHost", L"")) != NULL)
         if (FindWindowExW(hwndHost, NULL, L"DirectUIHWND", L"") != NULL)
-            ShowWindow(hwndHost, SW_FORCEMINIMIZE);
+        {
+            LONG lStyles = GetWindowLongW(hwndHost, GWL_STYLE);
+
+            if (!(lStyles & WS_MINIMIZE))
+            {
+                ShowWindow(hwndHost, SW_FORCEMINIMIZE);
+                log("Overlay disabled\n");
+            }
+        }
 }
 
 void Enable_Overlay()
@@ -19,6 +27,8 @@ void Enable_Overlay()
             ShowWindow(hwndHost, SW_NORMAL);
             ShowWindow(hwndHost, SW_HIDE);
         }
+
+    log("Overlay enabled\n");
 }
 
 float Get_Volume()
@@ -52,9 +62,9 @@ float Get_Volume()
     return current_volume;
 }
 
-bool Set_Volume(float new_bolume)
+bool Set_Volume(float new_volume)
 {
-    new_bolume /= 100;
+    new_volume /= 100;
 
     IMMDeviceEnumerator* deviceEnumerator = NULL;
     IMMDevice* defaultDevice = NULL;
@@ -72,7 +82,7 @@ bool Set_Volume(float new_bolume)
     defaultDevice->Release();
     defaultDevice = NULL;
 
-    endpointVolume->SetMasterVolumeLevelScalar(new_bolume, NULL);
+    endpointVolume->SetMasterVolumeLevelScalar(new_volume, NULL);
 
     float result_volume;
     endpointVolume->GetMasterVolumeLevelScalar(&result_volume);
@@ -82,6 +92,8 @@ bool Set_Volume(float new_bolume)
 
     CoUninitialize();
 
-    if (result_volume == new_bolume) return true;
+    log("Volume changed to %f\n", new_volume);
+
+    if (result_volume == new_volume) return true;
     else                             return false;
 }

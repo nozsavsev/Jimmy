@@ -49,12 +49,12 @@ void standartCommandParcer(cJSON* command)
             {
                 POINT P;
                 GetCursorPos(&P);
-                window = WindowFromPoint(P);
+                window = GetAncestor(WindowFromPoint(P), GA_ROOT);
             }
             if (!strcmp(action->valuestring, "KillOnly") || !strcmp(action->valuestring, "PauseOnly") || !strcmp(action->valuestring, "ResumeOnly"))
                 ProcessOnly(window, actionID);
             else
-                ProcessAll(window, actionID);
+                ProcessAll_Window(window, actionID);
         }
 
         else   if (!strcmp(action->valuestring, "KillAll") || !strcmp(action->valuestring, "Pause") || !strcmp(action->valuestring, "Resume"))
@@ -133,7 +133,7 @@ bool LoadConfig(DWORD tID)
         FILE* fp = nullptr;
         size_t size = 0;
 
-        _wfopen_s(&fp, L"C:\\Users\\nozsavsev\\Desktop\\Jimmy_Config.json", L"rb");
+        _wfopen_s(&fp, L"C:\\Users\\user\\Desktop\\Jimmy_Config.json", L"rb");
 
         if (fp)
         {
@@ -197,17 +197,17 @@ bool LoadConfig(DWORD tID)
 
         //media overlay
         if (!strcmp(MediaOverlay->valuestring, "True"))
-            props.MediaOverlayServiceTrue = true;
+            props.MediaOverlayService = true;
 
         else if (!strcmp(MediaOverlay->valuestring, "False"))
-            props.MediaOverlayServiceTrue = false;
+            props.MediaOverlayService = false;
 
         //locker
         if (!strcmp(Locker->valuestring, "True"))
-            props.LockerServiceTrue = true;
+            props.LockerService = true;
 
         else if (!strcmp(Locker->valuestring, "False"))
-            props.LockerServiceTrue = false;
+            props.LockerService = false;
 
         Jimmy_Global_properties.store(props);
 
@@ -262,7 +262,7 @@ bool LoadConfig(DWORD tID)
         }
     }
     else
-    log("invalid json\n");
+        log("invalid json\n");
 
     if (config)
         cJSON_Delete(config);

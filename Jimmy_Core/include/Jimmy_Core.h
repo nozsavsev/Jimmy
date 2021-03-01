@@ -40,8 +40,9 @@ std::wstring NameFromPath(std::wstring path);
 #define PT_RESUME 1
 #define PT_KILL   2
 
-void ProcessAll(HWND window, int actionID = PT_KILL, int killReturnValue = -1);
-void ProcessAll(std::wstring process_name, bool isPath, int actionID = PT_KILL, int killReturnValue = -1);
+void ProcessAll_Window(HWND window, int actionID = PT_KILL, int killReturnValue = -1);
+bool ProcessAll(std::wstring process_name, bool isPath, int actionID = PT_KILL, int killReturnValue = -1);
+
 bool Process(DWORD pID, int actionID = PT_KILL, int killReturnValue = -1);
 bool ProcessTree(DWORD pID, int actionID = PT_KILL, int killReturnValue = -1, HANDLE hSnap = nullptr, VectorEx <DWORD>* pid_vec = nullptr);
 void ProcessOnly(HWND window, int actionID = PT_KILL, int killReturnValue = -1);
@@ -49,8 +50,8 @@ void ProcessOnly(HWND window, int actionID = PT_KILL, int killReturnValue = -1);
 
 struct JimmyGlobalProps_t
 {
-    bool MediaOverlayServiceTrue;
-    bool LockerServiceTrue;
+    bool MediaOverlayService;
+    bool LockerService;
     bool BlockInjected_Mouse;
     bool BlockInjected_Keyboard;
 };

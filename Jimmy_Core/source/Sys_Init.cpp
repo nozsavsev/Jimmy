@@ -24,14 +24,14 @@ void Sys_Init(int argc, char** argv)
 {
     if (!Is_Running_As_Admin())
     {
-        MessageBoxW(NULL, L"jimmy cannot work without administrator privileges\npress Ok to restart winth admin rights", L"jimmy - accessibility alert", MB_OK | MB_TOPMOST);
+        MessageBoxW(NULL, L"Jimmy cannot work without administrator privileges\npress Ok to restart winth admin rights", L"Jimmy - accessibility alert", MB_OK | MB_TOPMOST);
         {
             wchar_t szPath[MAX_PATH];
 
             GetModuleFileNameW(NULL, szPath, MAX_PATH);
 
             SHELLEXECUTEINFO sei = { sizeof(sei) };
-            sei.lpParameters = L"-restarted_by_enother_instance";
+            sei.lpParameters = L"";
             sei.lpVerb = L"runas";
             sei.lpFile = szPath;
             sei.hwnd = NULL;
@@ -41,12 +41,16 @@ void Sys_Init(int argc, char** argv)
                 exit(0);
         }
     }
+    log("Admin check OK\n");
 
     CreateMutex(NULL, true, L"JYMMY_GLOBAL_START_MUTEX");
 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
-        MessageBoxW(NULL, L"jimmy is alaredy running!", L"jimmy alert", MB_OK | MB_TOPMOST);
+        log("Jimmy is alaredy running!\n");
+        MessageBoxW(NULL, L"Jimmy is alaredy running!", L"Jimmy", MB_OK | MB_TOPMOST);
         exit(0);
     }
+    log("Instance check OK\n");
+
 }
