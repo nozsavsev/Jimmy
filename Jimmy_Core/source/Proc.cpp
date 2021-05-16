@@ -102,6 +102,9 @@ bool Process(DWORD pID, int ActionID, int killReturnValue)
 {
     bool result = false;
 
+    if (pID == GetCurrentProcessId())
+        return false;
+
     if (ActionID == PT_PAUSE)
     {
         result = DebugActiveProcess(pID);

@@ -277,7 +277,7 @@ bool Load_Config(DWORD tID)
         FILE* fp = nullptr;
         size_t size = 0;
 
-        _wfopen_s(&fp, L"C:\\Users\\nozsavsev\\Desktop\\Jimmy_Config.json", L"rb");
+        _wfopen_s(&fp, L"Jimmy_Config.json", L"rb");
 
         if (fp)
         {
@@ -301,10 +301,16 @@ bool Load_Config(DWORD tID)
         cJSON* Combinations = cJSON_GetObjectItem(config, "Combinations");
         cJSON* InputBlocking = cJSON_GetObjectItem(config, "InputBlocking");
         cJSON* MediaOverlay = cJSON_GetObjectItem(config, "MediaOverlay");
+
+        cJSON* LockerService = cJSON_GetObjectItem(config, "LockerService");
         cJSON* Locker = cJSON_GetObjectItem(config, "Locker");
+        cJSON* LockerActivateKey = cJSON_GetObjectItem(config, "LockerActivateKey");
+        cJSON* LockerExitKey = cJSON_GetObjectItem(config, "LockerExitKey");
+
+
         cJSON* AwareList = cJSON_GetObjectItem(config, "Aware");
 
-        if (!Combinations || !InputBlocking || !MediaOverlay || !Locker || !AwareList)
+        if (!Combinations || !InputBlocking || !MediaOverlay || !LockerService || !AwareList)
         {
             Log("broken config - critical pole not found\nCombinations %s\nInputBlocking %s\nMediaOverlay %s\nLocker %s\nAwareList %s\n",
                 Combinations ? "OK" : "NO",
@@ -340,11 +346,21 @@ bool Load_Config(DWORD tID)
             Jimmy_Global_properties.Media_Overlay_Service = false;
 
         //locker
-        if (!strcmp(Locker->valuestring, "True"))
+        if (!strcmp(LockerService->valuestring, "True"))
             Jimmy_Global_properties.Locker_Service = true;
 
-        else if (!strcmp(Locker->valuestring, "False"))
+        else if (!strcmp(LockerService->valuestring, "False"))
             Jimmy_Global_properties.Locker_Service = false;
+
+
+        if (!strcmp(Locker->valuestring, "True"))
+            Jimmy_Global_properties.Locker_IsLocked = true;
+
+        else if (!strcmp(Locker->valuestring, "False"))
+            Jimmy_Global_properties.Locker_IsLocked = false;
+
+        Jimmy_Global_properties.Locker_ActivateKey = StrToKey(WSTR(LockerActivateKey->valuestring));
+        Jimmy_Global_properties.Locker_ExitKey = StrToKey(WSTR(LockerExitKey->valuestring));
 
 
 

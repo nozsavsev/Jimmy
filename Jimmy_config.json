@@ -1,0 +1,178 @@
+{
+  "InputBlocking": "Nothing",
+
+  "MediaOverlay": "True",
+  "LockerService": "True",
+  "Locker": "False",
+  "LockerActivateKey": "RCONTROL",
+  "LockerExitKey": "Q",
+
+  "Aware": [ "explorer.exe" ],
+
+  "Combinations": [
+    {
+      "Name": "Kill only UnderMouse window",
+      "Keys": [ "LMENU", "LCONTROL", "LSHIFT", "T" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "KillOnly",
+          "Status": "True",
+          "Subject": "UnderMouseWindow",
+          "Type": "Concept"
+        }
+      ]
+    },
+
+    {
+      "Name": "Kill only current window",
+      "Keys": [ "LMENU", "T" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "KillAll",
+          "Status": "True",
+          "Subject": "CurrentWindow",
+          "Type": "Concept"
+        }
+      ]
+    },
+
+    {
+      "Name": "NoTopmost current window",
+      "Keys": [ "LMENU", "L" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "PauseOnly",
+          "Status": "True",
+          "Subject": "UnderMouseWindow",
+          "Type": "Concept"
+        }
+      ]
+    },
+
+    {
+      "Name": "NoTopmost current window",
+      "Keys": [ "LMENU", "U" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "ResumeOnly",
+          "Status": "True",
+          "Subject": "UnderMouseWindow",
+          "Type": "Concept"
+        }
+      ]
+    },
+
+    {
+      "Name": "Minimize UnderMouse window",
+      "Keys": [ "LMENU", "LCONTROL", "LSHIFT", "M" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "Minimize",
+          "Status": "True",
+          "Subject": "UnderMouseWindow",
+          "Type": "Concept"
+        }
+      ]
+    },
+
+    {
+      "Name": "Minimize current window",
+      "Keys": [ "LMENU", "M" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "Minimize",
+          "Status": "True",
+          "Subject": "CurrentWindow",
+          "Type": "Concept"
+        }
+      ]
+    },
+
+    {
+      "Name": "Topmost UnderMouse window",
+      "Keys": [ "LMENU", "LCONTROL", "LSHIFT", "F" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "Topmost",
+          "Status": "True",
+          "Subject": "UnderMouseWindow",
+          "Type": "Concept"
+        }
+      ]
+    },
+
+    {
+      "Name": "Topmost current window",
+      "Keys": [ "LMENU", "F" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "Topmost",
+          "Status": "True",
+          "Subject": "CurrentWindow",
+          "Type": "Concept"
+        }
+      ]
+    },
+
+    {
+      "Name": "NoTopmost UnderMouse window",
+      "Keys": [ "LMENU", "LCONTROL", "LSHIFT", "B" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "NoTopmost",
+          "Status": "True",
+          "Subject": "UnderMouseWindow",
+          "Type": "Concept"
+        }
+      ]
+    },
+
+    {
+      "Name": "NoTopmost current window",
+      "Keys": [ "LMENU", "B" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "NoTopmost",
+          "Status": "True",
+          "Subject": "CurrentWindow",
+          "Type": "Concept"
+        }
+      ]
+    },
+
+    {
+      "Name": "ToggleInputBlocking",
+      "Keys": [ "LMENU", "LCONTROL", "LSHIFT", "D" ],
+      "BlockInputMode": "HKPP_BLOCK_INPUT",
+      "AllowInjected": "HKPP_ALLOW_INJECTED",
+      "Actions": [
+        {
+          "Action": "ToggleInputBlocking",
+          "Status": "True",
+          "Subject": "All",
+          "Type": "Concept"
+        }
+      ]
+    }
+  ]
+}

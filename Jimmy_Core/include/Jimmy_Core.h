@@ -50,8 +50,11 @@ void Process_Only(HWND window, int ActionID = PT_KILL, int killReturnValue = -1)
 //main
 struct JimmyGlobalProps_t
 {
-    std::atomic < bool> Media_Overlay_Service;
-    std::atomic < bool> Locker_Service;
+    std::atomic <bool> Media_Overlay_Service;
+    std::atomic <bool> Locker_Service;
+    std::atomic <DWORD> Locker_ActivateKey;
+    std::atomic <DWORD> Locker_ExitKey;
+    std::atomic <bool> Locker_IsLocked;
 
     std::atomic < bool> Block_Injected_Mouse;
     std::atomic < bool> Block_Injected_Keyboard;
@@ -168,3 +171,6 @@ extern VectorEx <Action_desk> Actions;
 
 //Log.cpp
 void Log(const char* Log_str, ...);
+
+
+void Locker_immproc();

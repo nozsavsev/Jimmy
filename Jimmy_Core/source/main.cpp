@@ -3,7 +3,7 @@
 #include <iostream>
 
 void helper_thread();
-void deprecated_helper_thread();
+void gui_loop();
 void Exit_Jimmy();
 
 JimmyGlobalProps_t Jimmy_Global_properties;
@@ -16,15 +16,12 @@ std::atomic<bool> Jimmy_Working = true;
 
 int main(int argc, char** argv)
 {
-
     Log("Starting Jimmy\n");
     Jimmy_Working = true;
     Sys_Init(argc, argv);
 
     std::thread th(&helper_thread);
-
-    deprecated_helper_thread();
-
+    gui_loop();
     th.join();
 
     return 0;
@@ -56,13 +53,6 @@ void helper_thread()
         TranslateMessage(&msg);
         if (msg.message == WM_QUIT) break;
 
-        if (msg.message == WM_HKPP_DEFAULT_CALLBACK_MESSAGE)
-        {
-            printf("Acttttion\n");
-            //do work
-
-        }
-
         DispatchMessageW(&msg);
     }
 
@@ -78,7 +68,7 @@ void helper_thread()
 
 
 
-void deprecated_helper_thread()
+void gui_loop()
 {
     helper_thread_id.store(GetCurrentThreadId());
     Log("Helper thread started\n");
@@ -90,6 +80,8 @@ void deprecated_helper_thread()
 
     while (Jimmy_Working)
     {
+
+        Locker_immproc();
 
         if (Jimmy_Global_properties.Media_Overlay_Service)
         {
@@ -105,8 +97,6 @@ void deprecated_helper_thread()
             IsHidden = false;
             Enable_Overlay();
         }
-
-        Sleep(10);
     }
 
     Log("Helper thread exit\n");
