@@ -18,6 +18,8 @@ void ProcessAll_Window(HWND window, int actionID, int killReturnValue)
     if (IsWindow(window))
         ProcessAll(NameFromPath(GetFullPath(window)).c_str(), false, actionID, killReturnValue);
 }
+
+
 bool ProcessAll(std::wstring process_name, bool isPath, int actionID, int killReturnValue)
 {
     bool retVal = true;

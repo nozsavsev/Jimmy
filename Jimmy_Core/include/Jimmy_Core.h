@@ -52,6 +52,7 @@ struct JimmyGlobalProps_t
 {
     bool MediaOverlayService;
     bool LockerService;
+
     bool BlockInjected_Mouse;
     bool BlockInjected_Keyboard;
 };
@@ -59,14 +60,111 @@ struct JimmyGlobalProps_t
 #define WSTR(Input) std::wstring(CA2W(Input, CP_UTF8))
 #define STR(Input) std::string(CW2A(Input, CP_UTF8))
 
-extern std::atomic<JimmyGlobalProps_t> Jimmy_Global_properties;
+extern JimmyGlobalProps_t Jimmy_Global_properties;
+extern std::mutex Jimmy_Global_properties_mutex;
 
-LRESULT CALLBACK JimmyLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK JimmyLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam, VectorEx<key_deskriptor> keydesk, bool repeated_input);
 LRESULT CALLBACK JimmyLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam);
 
+
+
+class target_process_t
+{
+public:
+    enum class process_type_t { path, name };
+    process_type_t trg_tp;
+    std::wstring process;
+};
+
+class target_window_t
+{
+public:
+    enum class target_window_type_t { current_window, undermouse_window };
+    target_window_type_t trg_tp;
+
+    HWND get();
+};
+
+class process_action_t
+{
+    target_window_t wind;
+    target_process_t proc;
+
+public:
+    enum class act_type_t { killAll, pauseAll, killOnly, pauseOnly, resumeAll, resumeOnly };
+    enum class trg_type_t { window, process };
+    enum class area_t { all, only };
+
+    act_type_t act_type;
+    trg_type_t trg_type;
+
+    void set_target(target_window_t wnd);
+    void set_target(target_process_t prc);
+
+    void perform();
+};
+
+class window_action_t
+{
+    target_window_t target;
+
+public:
+    enum class act_type_t { minimize, topmost, noTopmost };
+
+    act_type_t act_type;
+
+    void set_target(target_window_t wnd);
+
+    void perform();
+
+};
+
+class toggle_input_blocking_t
+{
+public:
+
+    enum class target_t { mouse, keyboard, all };
+    enum class allowment_t { injectedOnly, hardwareOnly, All };
+    enum class action_t { toggle, set };
+
+    target_t    trg;
+    allowment_t all;
+    action_t    act;
+    bool targetVal;
+
+    void perform();
+};
+
+class action_desk
+{
+public:
+    enum class action_type_t { process, window, input };
+
+protected:
+
+    process_action_t p;
+    toggle_input_blocking_t i;
+    window_action_t w;
+
+    action_type_t atype;
+
+public:
+
+    size_t uuid;
+    void setAction(process_action_t act);
+
+    void setAction(window_action_t act);
+
+    void setAction(toggle_input_blocking_t act);
+
+    void perform();
+};
+
+
 int GetHKPP_ConstantFromString(char* str);
-void StandartHotkeyHandler(std::wstring command_str);
-void standartCommandParcer(cJSON* command);
+action_desk GetActionObject(cJSON* command);
 bool LoadConfig(DWORD tID = GetCurrentThreadId());
+
+extern VectorEx <action_desk> actions;
 
 void log(const char* log_str, ...);

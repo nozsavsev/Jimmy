@@ -15,9 +15,9 @@ std::wstring GetFullPath(DWORD pID)
 
     HANDLE handle = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION, FALSE, pID);
 
-    if (handle)
+    if ( handle )
     {
-        if (QueryFullProcessImageNameW(handle, 0, buffer, &buffSize))
+        if ( QueryFullProcessImageNameW(handle, 0, buffer, &buffSize) )
             name = buffer;
         CloseHandle(handle);
     }

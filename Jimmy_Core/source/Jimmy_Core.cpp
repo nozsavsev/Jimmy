@@ -1,11 +1,13 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "Jimmy_Core.h"
+#include <iostream>
 
-void MouseHook_proc_helper_thread();
 void helper_thread();
+void deprecated_helper_thread();
 void Exit_Jimmy();
 
-std::atomic<JimmyGlobalProps_t> Jimmy_Global_properties;
+JimmyGlobalProps_t Jimmy_Global_properties;
+std::mutex Jimmy_Global_properties_mutex;
 
 std::atomic<DWORD> mouse_proc_thread_id = 0;
 std::atomic<DWORD> helper_thread_id = 0;
@@ -21,6 +23,10 @@ void log(const char* log_str, ...)
     static time_t rawtime;
     static struct tm* timeinfo;
 
+    time(&rawtime);
+    timeinfo = localtime(&rawtime);
+    strftime(buffer, sizeof(buffer), "%d/%m/%Y | %H:%M:%S", timeinfo);
+
     log_mutex.lock();
 
     if (flog == nullptr)
@@ -28,23 +34,23 @@ void log(const char* log_str, ...)
 #ifdef DEBUG
         flog = stderr;
 #else
-        fopen_s(&flog, "jimmy_log.txt", "wt+");
+        fopen_s(&flog, "jimmy_log.txt", "a+");
 
         if (!flog)
             flog = stderr;
+
+        fprintf(flog, "\n\n\n%s\tLOG START\n\n\n", buffer);
 #endif // DEBUG
     }
 
     else if (log_str == nullptr)
         if (flog != stderr)
         {
+            fprintf(flog, "\n\n\n%s\tLOG END --\n\n\n", buffer);
             fclose(flog);
             return;
         }
 
-    time(&rawtime);
-    timeinfo = localtime(&rawtime);
-    strftime(buffer, sizeof(buffer), "%d/%m/%Y | %H:%M:%S", timeinfo);
 
     fprintf(flog, "%s: ", buffer);
     va_list argptr;
@@ -56,41 +62,42 @@ void log(const char* log_str, ...)
 }
 
 
+
 int main(int argc, char** argv)
 {
-    log("Starting Jimmy\n");
 
+    log("Starting Jimmy\n");
     Jimmy_Working = true;
     Sys_Init(argc, argv);
 
-    if (LoadConfig(0))
-        log("Config loaded\n");
-
-    //std::thread hook_helper_thread(&MouseHook_proc_helper_thread);
-
-    auto mng = HKPP::Hotkey_Manager::Get_Instance();
-    mng->Add_Hotkey(HKPP::Hotkey_Deskriptor({ VK_LMENU , 'Q' }, Hotkey_Settings_t(
-        L"Exit jimmy",
-        [&](Hotkey_Deskriptor d) -> void {Exit_Jimmy(); },
-        NULL,
-        HKPP_BLOCK_INPUT,
-        HKPP_DENY_INJECTED)));
-
-
     helper_thread();
+
+    //  deprecated_helper_thread();
 
     return 0;
 }
 
-void MouseHook_proc_helper_thread()
+void helper_thread()
 {
     mouse_proc_thread_id.store(GetCurrentThreadId());
     HKPP::Hotkey_Manager* PInst = HKPP::Hotkey_Manager::Get_Instance();
 
     log("Setting up hooks (mouseLL)\n");
-    size_t callback_uuid = PInst->Add_Callback([&](int i, WPARAM w, LPARAM l) -> bool { return JimmyLowLevelKeyboardProc(i, w, l); });
+    size_t callback_uuid = PInst->Add_Callback([&](int i, WPARAM w, LPARAM l, VectorEx<key_deskriptor> keydesk, bool repeated_input) -> bool { return JimmyLowLevelKeyboardProc(i, w, l, keydesk, repeated_input); });
+    log("MOUSE_LL callback added\n");
+
     HHOOK mouse_hook_handle = SetWindowsHookExW(WH_MOUSE_LL, JimmyLowLevelMouseProc, NULL, NULL);
     log("Mouse hook OK\n");
+
+    if (LoadConfig())
+        log("Config loaded\n");
+
+    HKPP::Hotkey_Manager::Get_Instance()->Add_Hotkey(HKPP::Hotkey_Deskriptor({ VK_LMENU , 'Q' }, Hotkey_Settings_t(
+        L"Exit jimmy",
+        [&](Hotkey_Deskriptor d) -> void {Exit_Jimmy(); },
+        NULL,
+        HKPP_BLOCK_INPUT,
+        HKPP_DENY_INJECTED)));
 
     MSG msg;
     while (GetMessageW(&msg, NULL, NULL, NULL))
@@ -109,9 +116,11 @@ void MouseHook_proc_helper_thread()
     mouse_proc_thread_id.store(0);
 }
 
-void helper_thread()
-{
 
+
+
+void deprecated_helper_thread()
+{
     helper_thread_id.store(GetCurrentThreadId());
     log("Helper thread started\n");
 
@@ -122,7 +131,9 @@ void helper_thread()
 
     while (Jimmy_Working)
     {
-        if (Jimmy_Global_properties.load().MediaOverlayService)
+        Jimmy_Global_properties_mutex.lock();
+
+        if (Jimmy_Global_properties.MediaOverlayService)
         {
             if (volNowOld != Get_Volume())
             {
@@ -136,10 +147,11 @@ void helper_thread()
             IsHidden = false;
             Enable_Overlay();
         }
+        Jimmy_Global_properties_mutex.unlock();
 
         system("cls");
         HKPP::Hotkey_Manager::GetKeyboardState().foreach([&](key_deskriptor dsk) -> void { printf("[%ws]", keyToStr(dsk.Key).c_str()); });
-        Sleep(10);
+        Sleep(100);
     }
 
     log("Helper thread exit\n");
@@ -148,8 +160,15 @@ void helper_thread()
 
 LRESULT CALLBACK JimmyLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    if (!Jimmy_Global_properties.load().BlockInjected_Mouse)
-        return CallNextHookEx(NULL, NULL, NULL, NULL);
+
+    static JimmyGlobalProps_t local_props;
+
+    Jimmy_Global_properties_mutex.lock();
+    local_props = Jimmy_Global_properties;
+    Jimmy_Global_properties_mutex.unlock();
+
+    if (!local_props.BlockInjected_Mouse)
+        return CallNextHookEx(NULL, nCode, wParam, lParam);
 
     if (nCode == HC_ACTION)
     {
@@ -159,12 +178,18 @@ LRESULT CALLBACK JimmyLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
             return 1;
     }
 
-    return CallNextHookEx(NULL, NULL, NULL, NULL);
+    return CallNextHookEx(NULL, nCode, wParam, lParam);
 }
 
-LRESULT CALLBACK JimmyLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+LRESULT CALLBACK JimmyLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam, VectorEx<key_deskriptor> keydesk, bool repeated_input)
 {
-    if (!Jimmy_Global_properties.load().BlockInjected_Keyboard)
+    static JimmyGlobalProps_t local_props;
+
+    Jimmy_Global_properties_mutex.lock();
+    local_props = Jimmy_Global_properties;
+    Jimmy_Global_properties_mutex.unlock();
+
+    if (!local_props.BlockInjected_Keyboard)
         return false;
 
     if (nCode == HC_ACTION)
@@ -178,13 +203,15 @@ LRESULT CALLBACK JimmyLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lPar
     return false;
 }
 
+
+
 void Exit_Jimmy()
 {
     Jimmy_Working = false;
     Enable_Overlay();
     Hotkey_Manager::Get_Instance()->HKPP_Stop();
 
-    int ExitTimeout = 1000;
+    const int ExitTimeout = 1000;
 
     if (GetCurrentThreadId() != mouse_proc_thread_id.load())
     {
@@ -197,9 +224,8 @@ void Exit_Jimmy()
             Sleep(1);
 
             if (elapsed >= ExitTimeout)
-            {
                 break;
-            }
+
         }
     }
 
@@ -219,21 +245,5 @@ void Exit_Jimmy()
     }
     log("Exit\n");
     log(nullptr);
-
     exit(0);
-}
-
-void WatchDirectory(LPTSTR lpDir)
-{
-    DWORD WaitStatus = 0;;
-    HANDLE ChangeHandle = FindFirstChangeNotificationW(L"C:\\Users\\nozsavsev\\Desktop\\Jimmy_config.json", FALSE, FILE_NOTIFY_CHANGE_LAST_WRITE);
-
-    WaitForSingleObject(ChangeHandle, 0);
-
-    switch (WaitStatus)
-    {
-    case WAIT_OBJECT_0:
-        printf("changed");
-        break;
-    }
 }

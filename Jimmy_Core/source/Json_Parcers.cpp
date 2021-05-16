@@ -1,122 +1,268 @@
 #include "jimmy_Core.h"
 
-void StandartHotkeyHandler(std::wstring command_str)
+//deskriptors
+#pragma region desks
+
+HWND target_window_t::get()
 {
-    cJSON* commands = cJSON_Parse(STR(command_str.c_str()).c_str());
-
-    for (int i = 0; i < cJSON_GetArraySize(commands); i++)
+    switch (trg_tp)
     {
-        cJSON* subitem = cJSON_GetArrayItem(commands, i);
+    case target_window_type_t::current_window:
+        return GetForegroundWindow();
+        break;
 
-        if (subitem)
-            standartCommandParcer(subitem);
+    case target_window_type_t::undermouse_window:
+        POINT P;
+        GetCursorPos(&P);
+        return GetAncestor(WindowFromPoint(P), GA_ROOT);
+        break;
     }
-
-    if (commands)
-        cJSON_Delete(commands);
+    return nullptr;
 }
 
-void standartCommandParcer(cJSON* command)
+void process_action_t::set_target(target_window_t wnd)
 {
+    trg_type = trg_type_t::window; wind = wnd;
+};
 
+void process_action_t::set_target(target_process_t prc)
+{
+    trg_type = trg_type_t::process; proc = prc;
+};
+
+void process_action_t::perform()
+{
+    int action = -1;
+    int area = 0;
+
+    switch (act_type)
+    {
+    case process_action_t::act_type_t::killAll:    area = 1;    action = PT_KILL;   break;
+    case process_action_t::act_type_t::killOnly:   area = 0;    action = PT_KILL;   break;
+
+    case process_action_t::act_type_t::pauseAll:   area = 1;    action = PT_PAUSE;  break;
+    case process_action_t::act_type_t::pauseOnly:  area = 0;    action = PT_PAUSE;  break;
+
+    case process_action_t::act_type_t::resumeAll:  area = 1;    action = PT_RESUME; break;
+    case process_action_t::act_type_t::resumeOnly: area = 0;    action = PT_RESUME; break;
+    }
+
+    switch (trg_type)
+    {
+    case process_action_t::trg_type_t::window:
+    {
+        if (area)
+            ProcessOnly(wind.get(), action);
+        else
+            ProcessAll_Window(wind.get(), action);
+    }
+    break;
+
+    case process_action_t::trg_type_t::process:
+    {
+        bool ptype = (proc.trg_tp == target_process_t::process_type_t::path) ? true : false;
+        ProcessAll(proc.process, ptype, action);
+    }
+    break;
+    }
+}
+
+
+void window_action_t::set_target(target_window_t wnd) { target = wnd; };
+
+void window_action_t::perform()
+{
+    switch (act_type)
+    {
+    case window_action_t::act_type_t::minimize:
+        ShowWindow(target.get(), SW_FORCEMINIMIZE);
+        break;
+    case window_action_t::act_type_t::topmost:
+        SetWindowPos(target.get(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+        break;
+    case window_action_t::act_type_t::noTopmost:
+        SetWindowPos(target.get(), HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+        break;
+    }
+}
+
+
+
+void toggle_input_blocking_t::perform()
+{
+    Jimmy_Global_properties_mutex.lock();
+    {
+        switch (trg)
+        {
+        case toggle_input_blocking_t::target_t::mouse:
+            if (act == action_t::toggle)
+                Jimmy_Global_properties.BlockInjected_Mouse = Jimmy_Global_properties.BlockInjected_Mouse ? false : true;
+            else
+                Jimmy_Global_properties.BlockInjected_Mouse = targetVal;
+            break;
+
+        case toggle_input_blocking_t::target_t::keyboard:
+            if (act == action_t::toggle)
+                Jimmy_Global_properties.BlockInjected_Keyboard = Jimmy_Global_properties.BlockInjected_Mouse ? false : true;
+            else
+                Jimmy_Global_properties.BlockInjected_Keyboard = targetVal;
+            break;
+
+        case toggle_input_blocking_t::target_t::all:
+            if (act == action_t::toggle)
+            {
+                Jimmy_Global_properties.BlockInjected_Keyboard = Jimmy_Global_properties.BlockInjected_Mouse ? false : true;
+                Jimmy_Global_properties.BlockInjected_Mouse = Jimmy_Global_properties.BlockInjected_Mouse ? false : true;
+            }
+            else
+            {
+                Jimmy_Global_properties.BlockInjected_Keyboard = targetVal;
+                Jimmy_Global_properties.BlockInjected_Mouse = targetVal;
+            }
+            break;
+        }
+    }
+    Jimmy_Global_properties_mutex.unlock();
+
+}
+
+
+void action_desk::setAction(process_action_t act)
+{
+    atype = action_type_t::process;
+    p = act;
+}
+
+void action_desk::setAction(window_action_t act)
+{
+    atype = action_type_t::window;
+    w = act;
+}
+
+void action_desk::setAction(toggle_input_blocking_t act)
+{
+    atype = action_type_t::input;
+    i = act;
+}
+
+void action_desk::perform()
+{
+    switch (atype)
+    {
+    case action_desk::action_type_t::process:
+        p.perform();
+        break;
+    case action_desk::action_type_t::window:
+        w.perform();
+        break;
+    case action_desk::action_type_t::input:
+        i.perform();
+        break;
+    }
+}
+
+#pragma endregion
+
+
+VectorEx <action_desk> actions;
+
+action_desk GetActionObject(cJSON* command)
+{
     cJSON* action = cJSON_GetObjectItem(command, "Action");
     cJSON* status = cJSON_GetObjectItem(command, "Status");
     cJSON* subject = cJSON_GetObjectItem(command, "Subject");
     cJSON* type = cJSON_GetObjectItem(command, "Type");
 
     if (!action || !status || !subject || !type)
-        return;
+        return {};
+
+    action_desk retval;
 
     if (!strcmp(action->valuestring, "KillAll") || !strcmp(action->valuestring, "Pause") || !strcmp(action->valuestring, "Resume") ||
         !strcmp(action->valuestring, "KillOnly") || !strcmp(action->valuestring, "PauseOnly") || !strcmp(action->valuestring, "ResumeOnly"))
     {
-        int actionID = 0;
+        process_action_t pa;
 
-        if (!strcmp(action->valuestring, "KillAll") || !strcmp(action->valuestring, "KillOnly"))
-            actionID = PT_KILL;
-        else if (!strcmp(action->valuestring, "Pause") || !strcmp(action->valuestring, "PauseOnly"))
-            actionID = PT_PAUSE;
-        else if (!strcmp(action->valuestring, "Resume") || !strcmp(action->valuestring, "ResumeOnly"))
-            actionID = PT_RESUME;
+        if (!strcmp(action->valuestring, "KillAll"))          pa.act_type = process_action_t::act_type_t::killAll;
+        else  if (!strcmp(action->valuestring, "KillOnly"))   pa.act_type = process_action_t::act_type_t::killOnly;
+        else  if (!strcmp(action->valuestring, "Pause"))      pa.act_type = process_action_t::act_type_t::pauseAll;
+        else  if (!strcmp(action->valuestring, "PauseOnly"))  pa.act_type = process_action_t::act_type_t::pauseOnly;
+        else  if (!strcmp(action->valuestring, "Resume"))     pa.act_type = process_action_t::act_type_t::resumeAll;
+        else  if (!strcmp(action->valuestring, "ResumeOnly")) pa.act_type = process_action_t::act_type_t::resumeOnly;
+
 
         if (!strcmp(type->valuestring, "Concept"))
         {
-            HWND window = NULL;
+            target_window_t trgt;
 
             if (!strcmp(subject->valuestring, "CurrentWindow"))
-                window = GetForegroundWindow();
+                trgt.trg_tp = target_window_t::target_window_type_t::current_window;
             else if (!strcmp(subject->valuestring, "UnderMouseWindow"))
-            {
-                POINT P;
-                GetCursorPos(&P);
-                window = GetAncestor(WindowFromPoint(P), GA_ROOT);
-            }
-            if (!strcmp(action->valuestring, "KillOnly") || !strcmp(action->valuestring, "PauseOnly") || !strcmp(action->valuestring, "ResumeOnly"))
-                ProcessOnly(window, actionID);
-            else
-                ProcessAll_Window(window, actionID);
+                trgt.trg_tp = target_window_t::target_window_type_t::undermouse_window;
+
+            pa.set_target(trgt);
         }
 
-        else   if (!strcmp(action->valuestring, "KillAll") || !strcmp(action->valuestring, "Pause") || !strcmp(action->valuestring, "Resume"))
+        else if (!strcmp(type->valuestring, "KillAll"))
         {
+            target_process_t trgt;
             if (!strcmp(type->valuestring, "Path"))
-                ProcessAll(WSTR(subject->valuestring), true, actionID);
-
+                trgt.trg_tp = target_process_t::process_type_t::path;
             else if (!strcmp(type->valuestring, "ExeName"))
-                ProcessAll(WSTR(subject->valuestring), false, actionID);
+                trgt.trg_tp = target_process_t::process_type_t::name;
+
+            trgt.process = WSTR(subject->valuestring);
+
+            pa.set_target(trgt);
         }
+
+        retval.setAction(pa);
     }
 
     else if (!strcmp(action->valuestring, "Topmost") || !strcmp(action->valuestring, "NoTopmost") || !strcmp(action->valuestring, "Minimize"))
     {
-        HWND window = NULL;
+        window_action_t wa;
+
+        target_window_t trgt;
 
         if (!strcmp(subject->valuestring, "CurrentWindow"))
-            window = GetForegroundWindow();
+            trgt.trg_tp = target_window_t::target_window_type_t::current_window;
         else if (!strcmp(subject->valuestring, "UnderMouseWindow"))
-        {
-            POINT P;
-            GetCursorPos(&P);
-            window = GetAncestor(WindowFromPoint(P), GA_ROOT);
-        }
+            trgt.trg_tp = target_window_t::target_window_type_t::undermouse_window;
 
-        if (window)
-        {
-            if (!strcmp(action->valuestring, "Topmost"))
-                SetWindowPos(window, HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
 
-            else if (!strcmp(action->valuestring, "NoTopmost"))
-                SetWindowPos(window, HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+        wa.set_target(trgt);
+        if (!strcmp(action->valuestring, "Topmost"))
+            wa.act_type = window_action_t::act_type_t::topmost;
 
-            else if (!strcmp(action->valuestring, "Minimize"))
-                ShowWindow(window, SW_FORCEMINIMIZE);
-        }
+        else if (!strcmp(action->valuestring, "NoTopmost"))
+            wa.act_type = window_action_t::act_type_t::noTopmost;
+
+        else if (!strcmp(action->valuestring, "Minimize"))
+            wa.act_type = window_action_t::act_type_t::minimize;
+
+        retval.setAction(wa);
     }
 
     else if (!strcmp(action->valuestring, "ToggleInputBlocking"))
     {
-        JimmyGlobalProps_t props = Jimmy_Global_properties.load();
+        toggle_input_blocking_t ia;
+
+        ia.act = toggle_input_blocking_t::action_t::toggle;
 
         if (!strcmp(subject->valuestring, "All"))
-        {
-            props.BlockInjected_Keyboard = props.BlockInjected_Keyboard ? false : true;
-            props.BlockInjected_Mouse = props.BlockInjected_Mouse ? false : true;
-        }
-
+            ia.trg = toggle_input_blocking_t::target_t::all;
         else if (!strcmp(subject->valuestring, "Mouse"))
-            props.BlockInjected_Mouse = props.BlockInjected_Mouse ? false : true;
-
+            ia.trg = toggle_input_blocking_t::target_t::mouse;
         else if (!strcmp(subject->valuestring, "Keyboard"))
-            props.BlockInjected_Keyboard = props.BlockInjected_Keyboard ? false : true;
+            ia.trg = toggle_input_blocking_t::target_t::keyboard;
 
-
-        else if (!strcmp(subject->valuestring, "Nothing"))
-            props.BlockInjected_Keyboard = props.BlockInjected_Mouse = false;
-
-        Jimmy_Global_properties.store(props);
+        retval.setAction(ia);
     }
     else
         log("command not found '%s'\n", action->valuestring);
+
+    return retval;
 }
 
 bool LoadConfig(DWORD tID)
@@ -133,7 +279,7 @@ bool LoadConfig(DWORD tID)
         FILE* fp = nullptr;
         size_t size = 0;
 
-        _wfopen_s(&fp, L"C:\\Users\\user\\Desktop\\Jimmy_Config.json", L"rb");
+        _wfopen_s(&fp, L"C:\\Users\\nozsavsev\\Desktop\\Jimmy_Config.json", L"rb");
 
         if (fp)
         {
@@ -172,44 +318,38 @@ bool LoadConfig(DWORD tID)
             return false;
         }
 
-        for (int i = 0; i < cJSON_GetArraySize(AwareList); i++)
-        {
-            cJSON* subitem = cJSON_GetArrayItem(AwareList, i);
-            //!TODO aware list
-            if (!subitem)
-                continue;
-        }
 
-        JimmyGlobalProps_t props = Jimmy_Global_properties.load();
+
+        Jimmy_Global_properties_mutex.lock();
 
         //input filters                                                                   
         if (!strcmp(InputBlocking->valuestring, "All"))
-            props.BlockInjected_Keyboard = props.BlockInjected_Mouse = true;
+            Jimmy_Global_properties.BlockInjected_Keyboard = Jimmy_Global_properties.BlockInjected_Mouse = true;
 
         else if (!strcmp(InputBlocking->valuestring, "Mouse"))
-            props.BlockInjected_Mouse = true;
+            Jimmy_Global_properties.BlockInjected_Mouse = true;
 
         else if (!strcmp(InputBlocking->valuestring, "Keyboard"))
-            props.BlockInjected_Keyboard = true;
+            Jimmy_Global_properties.BlockInjected_Keyboard = true;
 
         else if (!strcmp(InputBlocking->valuestring, "Nothing"))
-            props.BlockInjected_Keyboard = props.BlockInjected_Mouse = false;
+            Jimmy_Global_properties.BlockInjected_Keyboard = Jimmy_Global_properties.BlockInjected_Mouse = false;
 
         //media overlay
         if (!strcmp(MediaOverlay->valuestring, "True"))
-            props.MediaOverlayService = true;
+            Jimmy_Global_properties.MediaOverlayService = true;
 
         else if (!strcmp(MediaOverlay->valuestring, "False"))
-            props.MediaOverlayService = false;
+            Jimmy_Global_properties.MediaOverlayService = false;
 
         //locker
         if (!strcmp(Locker->valuestring, "True"))
-            props.LockerService = true;
+            Jimmy_Global_properties.LockerService = true;
 
         else if (!strcmp(Locker->valuestring, "False"))
-            props.LockerService = false;
+            Jimmy_Global_properties.LockerService = false;
 
-        Jimmy_Global_properties.store(props);
+        Jimmy_Global_properties_mutex.unlock();
 
 
         for (int i = 0; i < cJSON_GetArraySize(Combinations); i++)
@@ -223,27 +363,46 @@ bool LoadConfig(DWORD tID)
             }
             cJSON* Name = cJSON_GetObjectItem(subitem, "Name");
             cJSON* BlockInputMode = cJSON_GetObjectItem(subitem, "BlockInputMode");
-            cJSON* AllowInjectedI = cJSON_GetObjectItem(subitem, "AllowInjectedI");
+            cJSON* AllowInjected = cJSON_GetObjectItem(subitem, "AllowInjected");
             cJSON* Keys = cJSON_GetObjectItem(subitem, "Keys");
             cJSON* Actions = cJSON_GetObjectItem(subitem, "Actions");
 
-            if (!BlockInputMode || !AllowInjectedI || !Keys || !Actions)
+            if (!BlockInputMode || !AllowInjected || !Keys || !Actions)
             {
                 log("broken config - combination %d\n", i);
                 continue;
             }
 
             Hotkey_Settings_t settings;
-            settings.Thread_Id = tID;
+            settings.Thread_Id = 0;
             settings.Msg = WM_HKPP_DEFAULT_CALLBACK_MESSAGE;
 
-            char* strin = cJSON_Print(Actions);
-            settings.name = WSTR(strin);
-            free(strin);
+            settings.name = WSTR(Name->valuestring);
+
+            for (int i = 0; i < cJSON_GetArraySize(Actions); i++)
+            {
+                cJSON* subitem = cJSON_GetArrayItem(Actions, i);
+
+                if (subitem)
+                {
+                    actions.push_back(GetActionObject(subitem));
+                    settings.userdata = &actions;
+                }
+            }
 
             settings.Block_Input = GetHKPP_ConstantFromString(BlockInputMode->valuestring);
-            settings.Allow_Injected = GetHKPP_ConstantFromString(AllowInjectedI->valuestring);;
-            settings.user_callback = [&](Hotkey_Deskriptor desk) -> void { StandartHotkeyHandler(desk.settings.name); };
+            settings.Allow_Injected = GetHKPP_ConstantFromString(AllowInjected->valuestring);;
+
+            settings.user_callback = [&](Hotkey_Deskriptor desk) -> void
+            {
+                ((VectorEx<action_desk>*)desk.settings.userdata)->foreach([&](action_desk& act) -> void
+                    {
+                        if (act.uuid == desk.settings.uuid)
+                        {
+                            act.perform();
+                        }
+                    });
+            };
 
             VectorEx <key_deskriptor> keys;
 
@@ -253,12 +412,15 @@ bool LoadConfig(DWORD tID)
                 if (subitem)
                 {
                     DWORD key = StrToKey(WSTR(subitem->valuestring));
+
                     if (key)
                         keys.push_back(key);
                 }
             }
+
             if (keys.size())
-                uuid_list.push_back(mng->Add_Hotkey(Hotkey_Deskriptor(keys, settings)));
+                actions[actions.size() - 1].uuid = mng->Add_Hotkey(Hotkey_Deskriptor(keys, settings));
+            log("loaded: '%s'\n", Name->valuestring);
         }
     }
     else
