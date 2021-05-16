@@ -41,16 +41,16 @@ void Sys_Init(int argc, char** argv)
                 exit(0);
         }
     }
-    log("Admin check OK\n");
+    Log("Admin check OK\n");
 
     CreateMutex(NULL, true, L"JYMMY_GLOBAL_START_MUTEX");
 
     if (GetLastError() == ERROR_ALREADY_EXISTS)
     {
-        log("Jimmy is alaredy running!\n");
+        Log("Jimmy is alaredy running!\n");
         MessageBoxW(NULL, L"Jimmy is alaredy running!", L"Jimmy", MB_OK | MB_TOPMOST);
         exit(0);
     }
-    log("Instance check OK\n");
+    Log("Instance check OK\n");
 
 }

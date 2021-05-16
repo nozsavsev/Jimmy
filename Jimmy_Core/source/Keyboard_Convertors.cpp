@@ -270,7 +270,7 @@ DWORD StrToKey(std::wstring key_str)
     if (!wcscmp(key_str.c_str(), L"MULTIPLY")) return VK_MULTIPLY;
     if (!wcscmp(key_str.c_str(), L"ADD")) return VK_ADD;
     if (!wcscmp(key_str.c_str(), L"SEPARATOR")) return VK_SEPARATOR;
-    if (!wcscmp(key_str.c_str(), L"SUBTRACT")) return VK_SUBTRACT;
+    if (!wcscmp(key_str.c_str(), L"SUBTRAct")) return VK_SUBTRACT;
     if (!wcscmp(key_str.c_str(), L"DECIMAL")) return VK_DECIMAL;
     if (!wcscmp(key_str.c_str(), L"DIVIDE")) return VK_DIVIDE;
     if (!wcscmp(key_str.c_str(), L"F1")) return VK_F1;

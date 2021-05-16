@@ -1,13 +1,13 @@
 #include "Jimmy_Core.h"
 
-std::wstring GetFullPath(HWND window)
+std::wstring Get_Full_Path(HWND window)
 {
     DWORD pID = 0;
     GetWindowThreadProcessId(window, &pID);
-    return GetFullPath(pID);
+    return Get_Full_Path(pID);
 }
 
-std::wstring GetFullPath(DWORD pID)
+std::wstring Get_Full_Path(DWORD pID)
 {
     std::wstring name = L"";
     DWORD buffSize = 1024;
@@ -25,7 +25,7 @@ std::wstring GetFullPath(DWORD pID)
     return name;
 }
 
-std::wstring NameFromPath(std::wstring path)
+std::wstring Name_From_Path(std::wstring path)
 {
     return path.substr(path.find_last_of(L"/\\") + 1);
 }

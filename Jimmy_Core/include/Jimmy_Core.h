@@ -31,30 +31,30 @@ DWORD StrToKey(std::wstring key_str);
 std::wstring keyToStr(DWORD key);
 
 //Path.cpp
-std::wstring GetFullPath(DWORD pID);
-std::wstring GetFullPath(HWND window);
-std::wstring NameFromPath(std::wstring path);
+std::wstring Get_Full_Path(DWORD pID);
+std::wstring Get_Full_Path(HWND window);
+std::wstring Name_From_Path(std::wstring path);
 
 //Proc.cpp
 #define PT_PAUSE  0
 #define PT_RESUME 1
 #define PT_KILL   2
 
-void ProcessAll_Window(HWND window, int actionID = PT_KILL, int killReturnValue = -1);
-bool ProcessAll(std::wstring process_name, bool isPath, int actionID = PT_KILL, int killReturnValue = -1);
+void Process_All_Window(HWND window, int ActionID = PT_KILL, int killReturnValue = -1);
+bool Process_All(std::wstring process_name, bool isPath, int ActionID = PT_KILL, int killReturnValue = -1);
 
-bool Process(DWORD pID, int actionID = PT_KILL, int killReturnValue = -1);
-bool ProcessTree(DWORD pID, int actionID = PT_KILL, int killReturnValue = -1, HANDLE hSnap = nullptr, VectorEx <DWORD>* pid_vec = nullptr);
-void ProcessOnly(HWND window, int actionID = PT_KILL, int killReturnValue = -1);
+bool Process(DWORD pID, int ActionID = PT_KILL, int killReturnValue = -1);
+bool Process_Tree(DWORD pID, int ActionID = PT_KILL, int killReturnValue = -1, HANDLE hSnap = nullptr, VectorEx <DWORD>* pid_vec = nullptr);
+void Process_Only(HWND window, int ActionID = PT_KILL, int killReturnValue = -1);
 
 //main
 struct JimmyGlobalProps_t
 {
-    std::atomic < bool> MediaOverlayService;
-    std::atomic < bool> LockerService;
+    std::atomic < bool> Media_Overlay_Service;
+    std::atomic < bool> Locker_Service;
 
-    std::atomic < bool> BlockInjected_Mouse;
-    std::atomic < bool> BlockInjected_Keyboard;
+    std::atomic < bool> Block_Injected_Mouse;
+    std::atomic < bool> Block_Injected_Keyboard;
 };
 
 #define WSTR(Input) std::wstring(CA2W(Input, CP_UTF8))
@@ -71,7 +71,7 @@ class target_process_t
 {
 public:
     enum class process_type_t { path, name };
-    process_type_t trg_tp;
+    process_type_t Trg_tp;
     std::wstring process;
 };
 
@@ -79,42 +79,42 @@ class target_window_t
 {
 public:
     enum class target_window_type_t { current_window, undermouse_window };
-    target_window_type_t trg_tp;
+    target_window_type_t Trg_tp;
 
     HWND get();
 };
 
-class process_action_t
+class process_Action_t
 {
     target_window_t wind;
     target_process_t proc;
 
 public:
-    enum class act_type_t { killAll, pauseAll, killOnly, pauseOnly, resumeAll, resumeOnly };
-    enum class trg_type_t { window, process };
+    enum class Act_Type_t { killAll, pauseAll, killOnly, pauseOnly, resumeAll, resumeOnly };
+    enum class Trg_type_t { window, process };
     enum class area_t { all, only };
 
-    act_type_t act_type;
-    trg_type_t trg_type;
+    Act_Type_t Act_Type;
+    Trg_type_t Trg_type;
 
-    void set_target(target_window_t wnd);
-    void set_target(target_process_t prc);
+    void Set_Target(target_window_t wnd);
+    void Set_Target(target_process_t prc);
 
-    void perform();
+    void Perform();
 };
 
-class window_action_t
+class window_Action_t
 {
     target_window_t target;
 
 public:
-    enum class act_type_t { minimize, topmost, noTopmost };
+    enum class Act_Type_t { minimize, topmost, noTopmost };
 
-    act_type_t act_type;
+    Act_Type_t Act_Type;
 
-    void set_target(target_window_t wnd);
+    void Set_Target(target_window_t wnd);
 
-    void perform();
+    void Perform();
 
 };
 
@@ -124,47 +124,47 @@ public:
 
     enum class target_t { mouse, keyboard, all };
     enum class allowment_t { injectedOnly, hardwareOnly, All };
-    enum class action_t { toggle, set };
+    enum class Action_t { toggle, set };
 
-    target_t    trg;
-    allowment_t all;
-    action_t    act;
-    bool targetVal;
+    target_t    Trg;
+    allowment_t All;
+    Action_t    Act;
+    bool Target_Val;
 
-    void perform();
+    void Perform();
 };
 
-class action_desk
+class Action_desk
 {
 public:
-    enum class action_type_t { process, window, input };
+    enum class Action_type_t { process, window, input };
 
 protected:
 
-    process_action_t p;
+    process_Action_t p;
     toggle_input_blocking_t i;
-    window_action_t w;
+    window_Action_t w;
 
-    action_type_t atype;
+    Action_type_t atype;
 
 public:
 
-    size_t uuid;
-    void setAction(process_action_t act);
+    size_t Uuid;
+    void setAction(process_Action_t Act);
 
-    void setAction(window_action_t act);
+    void setAction(window_Action_t Act);
 
-    void setAction(toggle_input_blocking_t act);
+    void setAction(toggle_input_blocking_t Act);
 
-    void perform();
+    void Perform();
 };
 
 
-int GetHKPP_ConstantFromString(char* str);
-action_desk GetActionObject(cJSON* command);
-bool LoadConfig(DWORD tID = GetCurrentThreadId());
+int Get_HKPP_Constant_From_String(char* str);
+Action_desk Get_Action_Object(cJSON* command);
+bool Load_Config(DWORD tID = GetCurrentThreadId());
 
-extern VectorEx <action_desk> actions;
+extern VectorEx <Action_desk> Actions;
 
-//log.cpp
-void log(const char* log_str, ...);
+//Log.cpp
+void Log(const char* Log_str, ...);

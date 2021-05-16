@@ -12,7 +12,7 @@ void Disable_Overlay()
             if (!(lStyles & WS_MINIMIZE))
             {
                 ShowWindow(hwndHost, SW_FORCEMINIMIZE);
-                log("Overlay disabled\n");
+                Log("Overlay disabled\n");
             }
         }
 }
@@ -28,7 +28,7 @@ void Enable_Overlay()
             ShowWindow(hwndHost, SW_HIDE);
         }
 
-    log("Overlay enabled\n");
+    Log("Overlay enabled\n");
 }
 
 float Get_Volume()
@@ -92,7 +92,7 @@ bool Set_Volume(float new_volume)
 
     CoUninitialize();
 
-    log("Volume changed to %f\n", new_volume);
+    Log("Volume changed to %f\n", new_volume);
 
     if (result_volume == new_volume) return true;
     else                             return false;

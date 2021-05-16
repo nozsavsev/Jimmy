@@ -1,10 +1,10 @@
 #define _CRT_SECURE_NO_WARNINGS
 #include "Jimmy_Core.h"
 
-void log(const char* log_str, ...)
+void Log(const char* Log_str, ...)
 {
-    static std::mutex log_mutex;
-    static FILE* flog = NULL;
+    static std::mutex Log_mutex;
+    static FILE* fLog = NULL;
 
     static char buffer[80];
     static time_t rawtime;
@@ -14,36 +14,36 @@ void log(const char* log_str, ...)
     timeinfo = localtime(&rawtime);
     strftime(buffer, sizeof(buffer), "%d/%m/%Y | %H:%M:%S", timeinfo);
 
-    log_mutex.lock();
+    Log_mutex.lock();
 
-    if (flog == nullptr)
+    if (fLog == nullptr)
     {
 #ifdef DEBUG
-        flog = stderr;
+        fLog = stderr;
 #else
-        fopen_s(&flog, "jimmy_log.txt", "a+");
+        fopen_s(&fLog, "jimmy_Log.txt", "a+");
 
-        if (!flog)
-            flog = stderr;
+        if (!fLog)
+            fLog = stderr;
 
-        fprintf(flog, "\n\n\n%s\tLOG START\n\n\n", buffer);
+        fprintf(fLog, "\n\n\n%s\tLog START\n\n\n", buffer);
 #endif // DEBUG
     }
 
-    else if (log_str == nullptr)
-        if (flog != stderr)
+    else if (Log_str == nullptr)
+        if (fLog != stderr)
         {
-            fprintf(flog, "\n\n\n%s\tLOG END --\n\n\n", buffer);
-            fclose(flog);
+            fprintf(fLog, "\n\n\n%s\tLog END --\n\n\n", buffer);
+            fclose(fLog);
             return;
         }
 
 
-    fprintf(flog, "%s: ", buffer);
+    fprintf(fLog, "%s: ", buffer);
     va_list argptr;
-    va_start(argptr, log_str);
-    vfprintf(flog, log_str, argptr);
+    va_start(argptr, Log_str);
+    vfprintf(fLog, Log_str, argptr);
     va_end(argptr);
 
-    log_mutex.unlock();
+    Log_mutex.unlock();
 }

@@ -5,7 +5,7 @@
 
 HWND target_window_t::get()
 {
-    switch (trg_tp)
+    switch (Trg_tp)
     {
     case target_window_type_t::current_window:
         return GetForegroundWindow();
@@ -20,67 +20,67 @@ HWND target_window_t::get()
     return nullptr;
 }
 
-void process_action_t::set_target(target_window_t wnd)
+void process_Action_t::Set_Target(target_window_t wnd)
 {
-    trg_type = trg_type_t::window; wind = wnd;
+    Trg_type = Trg_type_t::window; wind = wnd;
 };
 
-void process_action_t::set_target(target_process_t prc)
+void process_Action_t::Set_Target(target_process_t prc)
 {
-    trg_type = trg_type_t::process; proc = prc;
+    Trg_type = Trg_type_t::process; proc = prc;
 };
 
-void process_action_t::perform()
+void process_Action_t::Perform()
 {
-    int action = -1;
+    int Action = -1;
     int area = 0;
 
-    switch (act_type)
+    switch (Act_Type)
     {
-    case process_action_t::act_type_t::killAll:    area = 1;    action = PT_KILL;   break;
-    case process_action_t::act_type_t::killOnly:   area = 0;    action = PT_KILL;   break;
+    case process_Action_t::Act_Type_t::killAll:    area = 1;    Action = PT_KILL;   break;
+    case process_Action_t::Act_Type_t::killOnly:   area = 0;    Action = PT_KILL;   break;
 
-    case process_action_t::act_type_t::pauseAll:   area = 1;    action = PT_PAUSE;  break;
-    case process_action_t::act_type_t::pauseOnly:  area = 0;    action = PT_PAUSE;  break;
+    case process_Action_t::Act_Type_t::pauseAll:   area = 1;    Action = PT_PAUSE;  break;
+    case process_Action_t::Act_Type_t::pauseOnly:  area = 0;    Action = PT_PAUSE;  break;
 
-    case process_action_t::act_type_t::resumeAll:  area = 1;    action = PT_RESUME; break;
-    case process_action_t::act_type_t::resumeOnly: area = 0;    action = PT_RESUME; break;
+    case process_Action_t::Act_Type_t::resumeAll:  area = 1;    Action = PT_RESUME; break;
+    case process_Action_t::Act_Type_t::resumeOnly: area = 0;    Action = PT_RESUME; break;
     }
 
-    switch (trg_type)
+    switch (Trg_type)
     {
-    case process_action_t::trg_type_t::window:
+    case process_Action_t::Trg_type_t::window:
     {
         if (area)
-            ProcessOnly(wind.get(), action);
+            Process_Only(wind.get(), Action);
         else
-            ProcessAll_Window(wind.get(), action);
+            Process_All_Window(wind.get(), Action);
     }
     break;
 
-    case process_action_t::trg_type_t::process:
+    case process_Action_t::Trg_type_t::process:
     {
-        bool ptype = (proc.trg_tp == target_process_t::process_type_t::path) ? true : false;
-        ProcessAll(proc.process, ptype, action);
+        bool ptype = (proc.Trg_tp == target_process_t::process_type_t::path) ? true : false;
+        Process_All(proc.process, ptype, Action);
     }
     break;
     }
 }
 
 
-void window_action_t::set_target(target_window_t wnd) { target = wnd; };
+void window_Action_t::Set_Target(target_window_t wnd) { target = wnd; };
 
-void window_action_t::perform()
+void window_Action_t::Perform()
 {
-    switch (act_type)
+    switch (Act_Type)
     {
-    case window_action_t::act_type_t::minimize:
+    case window_Action_t::Act_Type_t::minimize:
         ShowWindow(target.get(), SW_FORCEMINIMIZE);
         break;
-    case window_action_t::act_type_t::topmost:
+    case window_Action_t::Act_Type_t::topmost:
         SetWindowPos(target.get(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
         break;
-    case window_action_t::act_type_t::noTopmost:
+    case window_Action_t::Act_Type_t::noTopmost:
         SetWindowPos(target.get(), HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
         break;
     }
@@ -88,35 +88,35 @@ void window_action_t::perform()
 
 
 
-void toggle_input_blocking_t::perform()
+void toggle_input_blocking_t::Perform()
 {
     {
-        switch (trg)
+        switch (Trg)
         {
         case toggle_input_blocking_t::target_t::mouse:
-            if (act == action_t::toggle)
-                Jimmy_Global_properties.BlockInjected_Mouse = Jimmy_Global_properties.BlockInjected_Mouse ? false : true;
+            if (Act == Action_t::toggle)
+                Jimmy_Global_properties.Block_Injected_Mouse = Jimmy_Global_properties.Block_Injected_Mouse ? false : true;
             else
-                Jimmy_Global_properties.BlockInjected_Mouse = targetVal;
+                Jimmy_Global_properties.Block_Injected_Mouse = Target_Val;
             break;
 
         case toggle_input_blocking_t::target_t::keyboard:
-            if (act == action_t::toggle)
-                Jimmy_Global_properties.BlockInjected_Keyboard = Jimmy_Global_properties.BlockInjected_Mouse ? false : true;
+            if (Act == Action_t::toggle)
+                Jimmy_Global_properties.Block_Injected_Keyboard = Jimmy_Global_properties.Block_Injected_Mouse ? false : true;
             else
-                Jimmy_Global_properties.BlockInjected_Keyboard = targetVal;
+                Jimmy_Global_properties.Block_Injected_Keyboard = Target_Val;
             break;
 
         case toggle_input_blocking_t::target_t::all:
-            if (act == action_t::toggle)
+            if (Act == Action_t::toggle)
             {
-                Jimmy_Global_properties.BlockInjected_Keyboard = Jimmy_Global_properties.BlockInjected_Mouse ? false : true;
-                Jimmy_Global_properties.BlockInjected_Mouse = Jimmy_Global_properties.BlockInjected_Mouse ? false : true;
+                Jimmy_Global_properties.Block_Injected_Keyboard = Jimmy_Global_properties.Block_Injected_Mouse ? false : true;
+                Jimmy_Global_properties.Block_Injected_Mouse = Jimmy_Global_properties.Block_Injected_Mouse ? false : true;
             }
             else
             {
-                Jimmy_Global_properties.BlockInjected_Keyboard = targetVal;
-                Jimmy_Global_properties.BlockInjected_Mouse = targetVal;
+                Jimmy_Global_properties.Block_Injected_Keyboard = Target_Val;
+                Jimmy_Global_properties.Block_Injected_Mouse = Target_Val;
             }
             break;
         }
@@ -125,36 +125,36 @@ void toggle_input_blocking_t::perform()
 }
 
 
-void action_desk::setAction(process_action_t act)
+void Action_desk::setAction(process_Action_t Act)
 {
-    atype = action_type_t::process;
-    p = act;
+    atype = Action_type_t::process;
+    p = Act;
 }
 
-void action_desk::setAction(window_action_t act)
+void Action_desk::setAction(window_Action_t Act)
 {
-    atype = action_type_t::window;
-    w = act;
+    atype = Action_type_t::window;
+    w = Act;
 }
 
-void action_desk::setAction(toggle_input_blocking_t act)
+void Action_desk::setAction(toggle_input_blocking_t Act)
 {
-    atype = action_type_t::input;
-    i = act;
+    atype = Action_type_t::input;
+    i = Act;
 }
 
-void action_desk::perform()
+void Action_desk::Perform()
 {
     switch (atype)
     {
-    case action_desk::action_type_t::process:
-        p.perform();
+    case Action_desk::Action_type_t::process:
+        p.Perform();
         break;
-    case action_desk::action_type_t::window:
-        w.perform();
+    case Action_desk::Action_type_t::window:
+        w.Perform();
         break;
-    case action_desk::action_type_t::input:
-        i.perform();
+    case Action_desk::Action_type_t::input:
+        i.Perform();
         break;
     }
 }
@@ -162,114 +162,114 @@ void action_desk::perform()
 #pragma endregion
 
 
-VectorEx <action_desk> actions;
+VectorEx <Action_desk> Actions;
 
-action_desk GetActionObject(cJSON* command)
+Action_desk Get_Action_Object(cJSON* command)
 {
-    cJSON* action = cJSON_GetObjectItem(command, "Action");
+    cJSON* Action = cJSON_GetObjectItem(command, "Action");
     cJSON* status = cJSON_GetObjectItem(command, "Status");
     cJSON* subject = cJSON_GetObjectItem(command, "Subject");
     cJSON* type = cJSON_GetObjectItem(command, "Type");
 
-    if (!action || !status || !subject || !type)
+    if (!Action || !status || !subject || !type)
         return {};
 
-    action_desk retval;
+    Action_desk retval;
 
-    if (!strcmp(action->valuestring, "KillAll") || !strcmp(action->valuestring, "Pause") || !strcmp(action->valuestring, "Resume") ||
-        !strcmp(action->valuestring, "KillOnly") || !strcmp(action->valuestring, "PauseOnly") || !strcmp(action->valuestring, "ResumeOnly"))
+    if (!strcmp(Action->valuestring, "KillAll") || !strcmp(Action->valuestring, "Pause") || !strcmp(Action->valuestring, "Resume") ||
+        !strcmp(Action->valuestring, "KillOnly") || !strcmp(Action->valuestring, "PauseOnly") || !strcmp(Action->valuestring, "ResumeOnly"))
     {
-        process_action_t pa;
+        process_Action_t pa;
 
-        if (!strcmp(action->valuestring, "KillAll"))          pa.act_type = process_action_t::act_type_t::killAll;
-        else  if (!strcmp(action->valuestring, "KillOnly"))   pa.act_type = process_action_t::act_type_t::killOnly;
-        else  if (!strcmp(action->valuestring, "Pause"))      pa.act_type = process_action_t::act_type_t::pauseAll;
-        else  if (!strcmp(action->valuestring, "PauseOnly"))  pa.act_type = process_action_t::act_type_t::pauseOnly;
-        else  if (!strcmp(action->valuestring, "Resume"))     pa.act_type = process_action_t::act_type_t::resumeAll;
-        else  if (!strcmp(action->valuestring, "ResumeOnly")) pa.act_type = process_action_t::act_type_t::resumeOnly;
+        if (!strcmp(Action->valuestring, "KillAll"))          pa.Act_Type = process_Action_t::Act_Type_t::killAll;
+        else  if (!strcmp(Action->valuestring, "KillOnly"))   pa.Act_Type = process_Action_t::Act_Type_t::killOnly;
+        else  if (!strcmp(Action->valuestring, "Pause"))      pa.Act_Type = process_Action_t::Act_Type_t::pauseAll;
+        else  if (!strcmp(Action->valuestring, "PauseOnly"))  pa.Act_Type = process_Action_t::Act_Type_t::pauseOnly;
+        else  if (!strcmp(Action->valuestring, "Resume"))     pa.Act_Type = process_Action_t::Act_Type_t::resumeAll;
+        else  if (!strcmp(Action->valuestring, "ResumeOnly")) pa.Act_Type = process_Action_t::Act_Type_t::resumeOnly;
 
 
         if (!strcmp(type->valuestring, "Concept"))
         {
-            target_window_t trgt;
+            target_window_t Trgt;
 
             if (!strcmp(subject->valuestring, "CurrentWindow"))
-                trgt.trg_tp = target_window_t::target_window_type_t::current_window;
+                Trgt.Trg_tp = target_window_t::target_window_type_t::current_window;
             else if (!strcmp(subject->valuestring, "UnderMouseWindow"))
-                trgt.trg_tp = target_window_t::target_window_type_t::undermouse_window;
+                Trgt.Trg_tp = target_window_t::target_window_type_t::undermouse_window;
 
-            pa.set_target(trgt);
+            pa.Set_Target(Trgt);
         }
 
         else if (!strcmp(type->valuestring, "KillAll"))
         {
-            target_process_t trgt;
+            target_process_t Trgt;
             if (!strcmp(type->valuestring, "Path"))
-                trgt.trg_tp = target_process_t::process_type_t::path;
+                Trgt.Trg_tp = target_process_t::process_type_t::path;
             else if (!strcmp(type->valuestring, "ExeName"))
-                trgt.trg_tp = target_process_t::process_type_t::name;
+                Trgt.Trg_tp = target_process_t::process_type_t::name;
 
-            trgt.process = WSTR(subject->valuestring);
+            Trgt.process = WSTR(subject->valuestring);
 
-            pa.set_target(trgt);
+            pa.Set_Target(Trgt);
         }
 
         retval.setAction(pa);
     }
 
-    else if (!strcmp(action->valuestring, "Topmost") || !strcmp(action->valuestring, "NoTopmost") || !strcmp(action->valuestring, "Minimize"))
+    else if (!strcmp(Action->valuestring, "Topmost") || !strcmp(Action->valuestring, "NoTopmost") || !strcmp(Action->valuestring, "Minimize"))
     {
-        window_action_t wa;
+        window_Action_t wa;
 
-        target_window_t trgt;
+        target_window_t Trgt;
 
         if (!strcmp(subject->valuestring, "CurrentWindow"))
-            trgt.trg_tp = target_window_t::target_window_type_t::current_window;
+            Trgt.Trg_tp = target_window_t::target_window_type_t::current_window;
         else if (!strcmp(subject->valuestring, "UnderMouseWindow"))
-            trgt.trg_tp = target_window_t::target_window_type_t::undermouse_window;
+            Trgt.Trg_tp = target_window_t::target_window_type_t::undermouse_window;
 
 
-        wa.set_target(trgt);
-        if (!strcmp(action->valuestring, "Topmost"))
-            wa.act_type = window_action_t::act_type_t::topmost;
+        wa.Set_Target(Trgt);
+        if (!strcmp(Action->valuestring, "Topmost"))
+            wa.Act_Type = window_Action_t::Act_Type_t::topmost;
 
-        else if (!strcmp(action->valuestring, "NoTopmost"))
-            wa.act_type = window_action_t::act_type_t::noTopmost;
+        else if (!strcmp(Action->valuestring, "NoTopmost"))
+            wa.Act_Type = window_Action_t::Act_Type_t::noTopmost;
 
-        else if (!strcmp(action->valuestring, "Minimize"))
-            wa.act_type = window_action_t::act_type_t::minimize;
+        else if (!strcmp(Action->valuestring, "Minimize"))
+            wa.Act_Type = window_Action_t::Act_Type_t::minimize;
 
         retval.setAction(wa);
     }
 
-    else if (!strcmp(action->valuestring, "ToggleInputBlocking"))
+    else if (!strcmp(Action->valuestring, "ToggleInputBlocking"))
     {
         toggle_input_blocking_t ia;
 
-        ia.act = toggle_input_blocking_t::action_t::toggle;
+        ia.Act = toggle_input_blocking_t::Action_t::toggle;
 
         if (!strcmp(subject->valuestring, "All"))
-            ia.trg = toggle_input_blocking_t::target_t::all;
+            ia.Trg = toggle_input_blocking_t::target_t::all;
         else if (!strcmp(subject->valuestring, "Mouse"))
-            ia.trg = toggle_input_blocking_t::target_t::mouse;
+            ia.Trg = toggle_input_blocking_t::target_t::mouse;
         else if (!strcmp(subject->valuestring, "Keyboard"))
-            ia.trg = toggle_input_blocking_t::target_t::keyboard;
+            ia.Trg = toggle_input_blocking_t::target_t::keyboard;
 
         retval.setAction(ia);
     }
     else
-        log("command not found '%s'\n", action->valuestring);
+        Log("command not found '%s'\n", Action->valuestring);
 
     return retval;
 }
 
-bool LoadConfig(DWORD tID)
+bool Load_Config(DWORD tID)
 {
     cJSON* config = NULL;
     Hotkey_Manager* mng = HKPP::Hotkey_Manager::Get_Instance();
     static VectorEx <size_t> uuid_list;
 
-    uuid_list.foreach([&](size_t uuid) -> void {mng->Remove_Hotkey(uuid); });
+    uuid_list.Foreach([&](size_t uuid) -> void {mng->Remove_Hotkey(uuid); });
     uuid_list.clear();
 
     {
@@ -306,7 +306,7 @@ bool LoadConfig(DWORD tID)
 
         if (!Combinations || !InputBlocking || !MediaOverlay || !Locker || !AwareList)
         {
-            log("broken config - critical pole not found\nCombinations %s\nInputBlocking %s\nMediaOverlay %s\nLocker %s\nAwareList %s\n",
+            Log("broken config - critical pole not found\nCombinations %s\nInputBlocking %s\nMediaOverlay %s\nLocker %s\nAwareList %s\n",
                 Combinations ? "OK" : "NO",
                 InputBlocking ? "OK" : "NO",
                 MediaOverlay ? "OK" : "NO",
@@ -321,30 +321,30 @@ bool LoadConfig(DWORD tID)
 
         //input filters                                                                   
         if (!strcmp(InputBlocking->valuestring, "All"))
-            Jimmy_Global_properties.BlockInjected_Keyboard = Jimmy_Global_properties.BlockInjected_Mouse = true;
+            Jimmy_Global_properties.Block_Injected_Keyboard = Jimmy_Global_properties.Block_Injected_Mouse = true;
 
         else if (!strcmp(InputBlocking->valuestring, "Mouse"))
-            Jimmy_Global_properties.BlockInjected_Mouse = true;
+            Jimmy_Global_properties.Block_Injected_Mouse = true;
 
         else if (!strcmp(InputBlocking->valuestring, "Keyboard"))
-            Jimmy_Global_properties.BlockInjected_Keyboard = true;
+            Jimmy_Global_properties.Block_Injected_Keyboard = true;
 
         else if (!strcmp(InputBlocking->valuestring, "Nothing"))
-            Jimmy_Global_properties.BlockInjected_Keyboard = Jimmy_Global_properties.BlockInjected_Mouse = false;
+            Jimmy_Global_properties.Block_Injected_Keyboard = Jimmy_Global_properties.Block_Injected_Mouse = false;
 
         //media overlay
         if (!strcmp(MediaOverlay->valuestring, "True"))
-            Jimmy_Global_properties.MediaOverlayService = true;
+            Jimmy_Global_properties.Media_Overlay_Service = true;
 
         else if (!strcmp(MediaOverlay->valuestring, "False"))
-            Jimmy_Global_properties.MediaOverlayService = false;
+            Jimmy_Global_properties.Media_Overlay_Service = false;
 
         //locker
         if (!strcmp(Locker->valuestring, "True"))
-            Jimmy_Global_properties.LockerService = true;
+            Jimmy_Global_properties.Locker_Service = true;
 
         else if (!strcmp(Locker->valuestring, "False"))
-            Jimmy_Global_properties.LockerService = false;
+            Jimmy_Global_properties.Locker_Service = false;
 
 
 
@@ -354,18 +354,18 @@ bool LoadConfig(DWORD tID)
 
             if (!subitem)
             {
-                log("broken config - combination %d\n", i);
+                Log("broken config - combination %d\n", i);
                 continue;
             }
             cJSON* Name = cJSON_GetObjectItem(subitem, "Name");
             cJSON* BlockInputMode = cJSON_GetObjectItem(subitem, "BlockInputMode");
             cJSON* AllowInjected = cJSON_GetObjectItem(subitem, "AllowInjected");
             cJSON* Keys = cJSON_GetObjectItem(subitem, "Keys");
-            cJSON* Actions = cJSON_GetObjectItem(subitem, "Actions");
+            cJSON* Actions_json = cJSON_GetObjectItem(subitem, "Actions");
 
-            if (!BlockInputMode || !AllowInjected || !Keys || !Actions)
+            if (!BlockInputMode || !AllowInjected || !Keys || !Actions_json)
             {
-                log("broken config - combination %d\n", i);
+                Log("broken config - combination %d\n", i);
                 continue;
             }
 
@@ -373,29 +373,29 @@ bool LoadConfig(DWORD tID)
             settings.Thread_Id = 0;
             settings.Msg = WM_HKPP_DEFAULT_CALLBACK_MESSAGE;
 
-            settings.name = WSTR(Name->valuestring);
+            settings.Name = WSTR(Name->valuestring);
 
-            for (int i = 0; i < cJSON_GetArraySize(Actions); i++)
+            for (int i = 0; i < cJSON_GetArraySize(Actions_json); i++)
             {
-                cJSON* subitem = cJSON_GetArrayItem(Actions, i);
+                cJSON* subitem = cJSON_GetArrayItem(Actions_json, i);
 
                 if (subitem)
                 {
-                    actions.push_back(GetActionObject(subitem));
-                    settings.userdata = &actions;
+                    Actions.push_back(Get_Action_Object(subitem));
+                    settings.userdata = &Actions;
                 }
             }
 
-            settings.Block_Input = GetHKPP_ConstantFromString(BlockInputMode->valuestring);
-            settings.Allow_Injected = GetHKPP_ConstantFromString(AllowInjected->valuestring);;
+            settings.Block_Input = Get_HKPP_Constant_From_String(BlockInputMode->valuestring);
+            settings.Allow_Injected = Get_HKPP_Constant_From_String(AllowInjected->valuestring);;
 
-            settings.user_callback = [&](Hotkey_Deskriptor desk) -> void
+            settings.User_Callback = [&](Hotkey_Deskriptor desk) -> void
             {
-                ((VectorEx<action_desk>*)desk.settings.userdata)->foreach([&](action_desk& act) -> void
+                ((VectorEx<Action_desk>*)desk.settings.userdata)->Foreach([&](Action_desk& Act) -> void
                     {
-                        if (act.uuid == desk.settings.uuid)
+                        if (Act.Uuid == desk.settings.Uuid)
                         {
-                            act.perform();
+                            Act.Perform();
                         }
                     });
             };
@@ -415,12 +415,12 @@ bool LoadConfig(DWORD tID)
             }
 
             if (keys.size())
-                actions[actions.size() - 1].uuid = mng->Add_Hotkey(Hotkey_Deskriptor(keys, settings));
-            log("loaded: '%s'\n", Name->valuestring);
+                Actions[Actions.size() - 1].Uuid = mng->Add_Hotkey(Hotkey_Deskriptor(keys, settings));
+            Log("loaded: '%s'\n", Name->valuestring);
         }
     }
     else
-        log("invalid json\n");
+        Log("invalid json\n");
 
     if (config)
         cJSON_Delete(config);
@@ -428,7 +428,7 @@ bool LoadConfig(DWORD tID)
     return true;
 }
 
-int GetHKPP_ConstantFromString(char* str)
+int Get_HKPP_Constant_From_String(char* str)
 {
     if (!strcmp(str, "HKPP_BLOCK_INPUT"))
         return HKPP_BLOCK_INPUT;

@@ -1,26 +1,26 @@
 #include "Jimmy_Core.h"
 
-void ProcessOnly(HWND window, int actionID, int killReturnValue)
+void Process_Only(HWND window, int ActionID, int killReturnValue)
 {
     bool result = 0;
     DWORD pID = 0;
     if (IsWindow(window))
     {
         GetWindowThreadProcessId(window, &pID);
-        result = ProcessTree(pID, actionID, killReturnValue);
+        result = Process_Tree(pID, ActionID, killReturnValue);
     }
 
-    log("processOnly -> %llu | Action:%d status: %s\n", window, actionID, result ? "OK" : "ERROR");
+    Log("processOnly -> %llu | Action:%d status: %s\n", window, ActionID, result ? "OK" : "ERROR");
 }
 
-void ProcessAll_Window(HWND window, int actionID, int killReturnValue)
+void Process_All_Window(HWND window, int ActionID, int killReturnValue)
 {
     if (IsWindow(window))
-        ProcessAll(NameFromPath(GetFullPath(window)).c_str(), false, actionID, killReturnValue);
+        Process_All(Name_From_Path(Get_Full_Path(window)).c_str(), false, ActionID, killReturnValue);
 }
 
 
-bool ProcessAll(std::wstring process_name, bool isPath, int actionID, int killReturnValue)
+bool Process_All(std::wstring process_name, bool isPath, int ActionID, int killReturnValue)
 {
     bool retVal = true;
 
@@ -40,24 +40,24 @@ bool ProcessAll(std::wstring process_name, bool isPath, int actionID, int killRe
         {
             if (isPath)
             {
-                if (!_wcsicmp(GetFullPath(pe.th32ProcessID).c_str(), process_name.c_str()))
-                    if (!ProcessTree(pe.th32ProcessID, actionID, killReturnValue))
+                if (!_wcsicmp(Get_Full_Path(pe.th32ProcessID).c_str(), process_name.c_str()))
+                    if (!Process_Tree(pe.th32ProcessID, ActionID, killReturnValue))
                         retVal = false;
             }
             else
                 if (!_wcsicmp(pe.szExeFile, process_name.c_str()))
-                    if (!ProcessTree(pe.th32ProcessID, actionID, killReturnValue))
+                    if (!Process_Tree(pe.th32ProcessID, ActionID, killReturnValue))
                         retVal = false;
 
             bContinue = Process32Next(hSnap, &pe) ? true : false;
         }
     }
 
-    log("processALL -> %ws | Action:%d status: %s\n", process_name.c_str(), actionID, retVal ? "OK" : "ERROR");
+    Log("Process_All -> %ws | Action:%d status: %s\n", process_name.c_str(), ActionID, retVal ? "OK" : "ERROR");
     return retVal;
 }
 
-bool ProcessTree(DWORD pID, int actionID, int killReturnValue, HANDLE hSnap, VectorEx <DWORD>* pid_vec)
+bool Process_Tree(DWORD pID, int ActionID, int killReturnValue, HANDLE hSnap, VectorEx <DWORD>* pid_vec)
 {
     bool first = false;
     bool returnVal = false;
@@ -80,7 +80,7 @@ bool ProcessTree(DWORD pID, int actionID, int killReturnValue, HANDLE hSnap, Vec
         while (bContinue)
         {
             if (pe.th32ParentProcessID == pID)
-                ProcessTree(pe.th32ProcessID, actionID, killReturnValue, hSnap, pid_vec);//kill child proc tree
+                Process_Tree(pe.th32ProcessID, ActionID, killReturnValue, hSnap, pid_vec);//kill child proc tree
 
             bContinue = Process32Next(hSnap, &pe) ? true : false;
         }
@@ -91,39 +91,39 @@ bool ProcessTree(DWORD pID, int actionID, int killReturnValue, HANDLE hSnap, Vec
 
     if (first)
     {
-        pid_vec->foreach([&](DWORD pid_l)-> void { returnVal |= !Process(pid_l, actionID, killReturnValue); });
+        pid_vec->Foreach([&](DWORD pid_l)-> void { returnVal |= !Process(pid_l, ActionID, killReturnValue); });
         delete pid_vec;
     }
 
     return !returnVal;
 }
 
-bool Process(DWORD pID, int actionID, int killReturnValue)
+bool Process(DWORD pID, int ActionID, int killReturnValue)
 {
     bool result = false;
 
-    if (actionID == PT_PAUSE)
+    if (ActionID == PT_PAUSE)
     {
         result = DebugActiveProcess(pID);
-        log("Process -> pID:%d Path:'%ws' ActionID:%d status: %s\n", pID, GetFullPath(pID).c_str(), actionID, result ? "OK" : "ERROR");
+        Log("Process -> pID:%d Path:'%ws' ActionID:%d status: %s\n", pID, Get_Full_Path(pID).c_str(), ActionID, result ? "OK" : "ERROR");
     }
-    if (actionID == PT_RESUME)
+    if (ActionID == PT_RESUME)
     {
         result = DebugActiveProcessStop(pID);
-        log("Process -> pID:%d Path:'%ws' ActionID:%d status: %s\n", pID, GetFullPath(pID).c_str(), actionID, result ? "OK" : "ERROR");
+        Log("Process -> pID:%d Path:'%ws' ActionID:%d status: %s\n", pID, Get_Full_Path(pID).c_str(), ActionID, result ? "OK" : "ERROR");
     }
 
-    if (actionID == PT_KILL)
+    if (ActionID == PT_KILL)
     {
         HANDLE phandle = OpenProcess(PROCESS_TERMINATE, 0, pID);
 
         result = TerminateProcess(phandle, killReturnValue);
-        log("Process -> pID:%d Path:'%ws' ActionID:%d status: %s | GLR:%lu\n", pID, GetFullPath(pID).c_str(), actionID, result ? "OK" : "ERROR" , GetLastError());
+        Log("Process -> pID:%d Path:'%ws' ActionID:%d status: %s | GLR:%lu\n", pID, Get_Full_Path(pID).c_str(), ActionID, result ? "OK" : "ERROR", GetLastError());
 
         if (phandle)
             CloseHandle(phandle);
 
-    
+
     }
 
     return result;

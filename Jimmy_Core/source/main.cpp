@@ -17,7 +17,7 @@ std::atomic<bool> Jimmy_Working = true;
 int main(int argc, char** argv)
 {
 
-    log("Starting Jimmy\n");
+    Log("Starting Jimmy\n");
     Jimmy_Working = true;
     Sys_Init(argc, argv);
 
@@ -35,13 +35,13 @@ void helper_thread()
     mouse_proc_thread_id.store(GetCurrentThreadId());
     HKPP::Hotkey_Manager* PInst = HKPP::Hotkey_Manager::Get_Instance();
 
-    log("Setting up hooks (mouseLL)\n");
-    size_t callback_uuid = PInst->Add_Callback([&](int i, WPARAM w, LPARAM l, VectorEx<key_deskriptor> keydesk, bool repeated_input) -> bool { return JimmyLowLevelKeyboardProc(i, w, l, keydesk, repeated_input); });
+    Log("Setting up hooks (mouseLL)\n");
+    size_t callback_Uuid = PInst->Add_Callback([&](int i, WPARAM w, LPARAM l, VectorEx<key_deskriptor> keydesk, bool repeated_input) -> bool { return JimmyLowLevelKeyboardProc(i, w, l, keydesk, repeated_input); });
     HHOOK mouse_hook_handle = SetWindowsHookExW(WH_MOUSE_LL, JimmyLowLevelMouseProc, NULL, NULL);
-    log("Mouse hook OK\n");
+    Log("Mouse hook OK\n");
 
-    if (LoadConfig())
-        log("Config loaded\n");
+    if (Load_Config())
+        Log("Config loaded\n");
 
     HKPP::Hotkey_Manager::Get_Instance()->Add_Hotkey(HKPP::Hotkey_Deskriptor({ VK_LMENU , 'Q' }, Hotkey_Settings_t(
         L"Exit jimmy",
@@ -58,7 +58,7 @@ void helper_thread()
 
         if (msg.message == WM_HKPP_DEFAULT_CALLBACK_MESSAGE)
         {
-            printf("acttttion\n");
+            printf("Acttttion\n");
             //do work
 
         }
@@ -66,12 +66,12 @@ void helper_thread()
         DispatchMessageW(&msg);
     }
 
-    PInst->Remove_Callback(callback_uuid);
-    log("Removing callbacks\n");
-    callback_uuid = 0;
+    PInst->Remove_Callback(callback_Uuid);
+    Log("Removing callbacks\n");
+    callback_Uuid = 0;
     UnhookWindowsHookEx(mouse_hook_handle);
-    log("Disabling hooks (mouseLL)\n");
-    log("MouseLL exit\n");
+    Log("Disabling hooks (mouseLL)\n");
+    Log("MouseLL exit\n");
     mouse_proc_thread_id.store(0);
 }
 
@@ -81,7 +81,7 @@ void helper_thread()
 void deprecated_helper_thread()
 {
     helper_thread_id.store(GetCurrentThreadId());
-    log("Helper thread started\n");
+    Log("Helper thread started\n");
 
     Enable_Overlay();
 
@@ -91,7 +91,7 @@ void deprecated_helper_thread()
     while (Jimmy_Working)
     {
 
-        if (Jimmy_Global_properties.MediaOverlayService)
+        if (Jimmy_Global_properties.Media_Overlay_Service)
         {
             if (volNowOld != Get_Volume())
             {
@@ -109,13 +109,13 @@ void deprecated_helper_thread()
         Sleep(10);
     }
 
-    log("Helper thread exit\n");
+    Log("Helper thread exit\n");
     helper_thread_id.store(0);
 }
 
 LRESULT CALLBACK JimmyLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 {
-    if (!Jimmy_Global_properties.BlockInjected_Mouse)
+    if (!Jimmy_Global_properties.Block_Injected_Mouse)
         return CallNextHookEx(NULL, NULL, NULL, NULL);
 
     if (nCode == HC_ACTION)
@@ -131,7 +131,7 @@ LRESULT CALLBACK JimmyLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 
 LRESULT CALLBACK JimmyLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam, VectorEx<key_deskriptor> keydesk, bool repeated_input)
 {
-    if (!Jimmy_Global_properties.BlockInjected_Keyboard)
+    if (!Jimmy_Global_properties.Block_Injected_Keyboard)
         return false;
 
     if (nCode == HC_ACTION)
@@ -185,7 +185,7 @@ void Exit_Jimmy()
                 break;
         }
     }
-    log("Exit\n");
-    log(nullptr);
+    Log("Exit\n");
+    Log(nullptr);
     exit(0);
 }
