@@ -95,61 +95,57 @@ void Locker_immproc()
     }
 
 
-
-    while (1)
+    if (Jimmy_Global_properties.Locker_IsLocked || unlockAnim.getElapsedTime().asMilliseconds() < ANIM_TIME_ALL || lockAnim.getElapsedTime().asMilliseconds() < ANIM_TIME_ALL)
     {
-        if (Jimmy_Global_properties.Locker_IsLocked || unlockAnim.getElapsedTime().asMilliseconds() < ANIM_TIME_ALL || lockAnim.getElapsedTime().asMilliseconds() < ANIM_TIME_ALL)
+        if (justLocked == false)
         {
-            if (justLocked == false)
+            std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void { ShowWindow(wpt->getSystemHandle(), SW_SHOW); });
+            justLocked = true;
+            lockAnim.restart();
+        }
+
+        if (!Jimmy_Global_properties.Locker_IsLocked == false)
+        {
+            unlockAnim.restart();
+        }
+
+        HWND hw = winvec[1]->getSystemHandle();
+
+        SetForegroundWindow(hw);
+        SetActiveWindow(hw);
+
+        std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void
             {
-                std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void { ShowWindow(wpt->getSystemHandle(), SW_SHOW); });
-                justLocked = true;
-                lockAnim.restart();
-            }
+                ShowWindow(wpt->getSystemHandle(), SW_NORMAL);
+                while (wpt->pollEvent(evt));
 
-            if (!Jimmy_Global_properties.Locker_IsLocked == false)
-            {
-                unlockAnim.restart();
-            }
-
-            HWND hw = winvec[1]->getSystemHandle();
-
-            SetForegroundWindow(hw);
-            SetActiveWindow(hw);
-
-            std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void
+                if (Jimmy_Global_properties.Locker_IsLocked)
                 {
-                    ShowWindow(wpt->getSystemHandle(), SW_NORMAL);
-                    while (wpt->pollEvent(evt));
+                    int cval = lockAnim.getElapsedTime().asMilliseconds();
+                    if (cval > ANIM_TIME) cval = ANIM_TIME;
 
-                    if (Jimmy_Global_properties.Locker_IsLocked)
-                    {
-                        int cval = lockAnim.getElapsedTime().asMilliseconds();
-                        if (cval > ANIM_TIME) cval = ANIM_TIME;
+                    wpt->clear(gradi_lock.getVal(cval / ANIM_TIME));
+                }
+                else
+                {
+                    int cval = unlockAnim.getElapsedTime().asMilliseconds();
+                    if (cval > ANIM_TIME) cval = ANIM_TIME;
 
-                        wpt->clear(gradi_lock.getVal(cval / ANIM_TIME));
-                    }
-                    else
-                    {
-                        int cval = unlockAnim.getElapsedTime().asMilliseconds();
-                        if (cval > ANIM_TIME) cval = ANIM_TIME;
+                    wpt->clear(gradi_unlock.getVal(cval / ANIM_TIME));
+                }
 
-                        wpt->clear(gradi_unlock.getVal(cval / ANIM_TIME));
-                    }
-
-                    wpt->display();
-                });
-        }
-        else
+                wpt->display();
+            });
+    }
+    else
+    {
+        if (justLocked)
         {
-            if (justLocked)
-            {
-                std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void { ShowWindow(wpt->getSystemHandle(), SW_HIDE); });
-                justLocked = false;
-            }
-
-            std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void { while (wpt->pollEvent(evt)); });
-            Sleep(10);
+            std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void { ShowWindow(wpt->getSystemHandle(), SW_HIDE); });
+            justLocked = false;
         }
+
+        std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void { while (wpt->pollEvent(evt)); });
+        Sleep(10);
     }
 }
