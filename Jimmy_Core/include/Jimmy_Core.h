@@ -47,27 +47,26 @@ bool Process(DWORD pID, int actionID = PT_KILL, int killReturnValue = -1);
 bool ProcessTree(DWORD pID, int actionID = PT_KILL, int killReturnValue = -1, HANDLE hSnap = nullptr, VectorEx <DWORD>* pid_vec = nullptr);
 void ProcessOnly(HWND window, int actionID = PT_KILL, int killReturnValue = -1);
 
-
+//main
 struct JimmyGlobalProps_t
 {
-    bool MediaOverlayService;
-    bool LockerService;
+    std::atomic < bool> MediaOverlayService;
+    std::atomic < bool> LockerService;
 
-    bool BlockInjected_Mouse;
-    bool BlockInjected_Keyboard;
+    std::atomic < bool> BlockInjected_Mouse;
+    std::atomic < bool> BlockInjected_Keyboard;
 };
 
 #define WSTR(Input) std::wstring(CA2W(Input, CP_UTF8))
 #define STR(Input) std::string(CW2A(Input, CP_UTF8))
 
 extern JimmyGlobalProps_t Jimmy_Global_properties;
-extern std::mutex Jimmy_Global_properties_mutex;
 
 LRESULT CALLBACK JimmyLowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam, VectorEx<key_deskriptor> keydesk, bool repeated_input);
 LRESULT CALLBACK JimmyLowLevelMouseProc(int nCode, WPARAM wParam, LPARAM lParam);
 
 
-
+//json parsers
 class target_process_t
 {
 public:
@@ -167,4 +166,5 @@ bool LoadConfig(DWORD tID = GetCurrentThreadId());
 
 extern VectorEx <action_desk> actions;
 
+//log.cpp
 void log(const char* log_str, ...);

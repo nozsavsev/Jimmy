@@ -187,7 +187,8 @@
   <ItemGroup>
     <ClCompile Include="external\cJSON\cJSON.c" />
     <ClCompile Include="external\cJSON\cJSON_Utils.c" />
-    <ClCompile Include="source\Jimmy_Core.cpp" />
+    <ClCompile Include="log.cpp" />
+    <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\Json_Parcers.cpp" />
     <ClCompile Include="source\Keyboard_Convertors.cpp" />
     <ClCompile Include="source\Media_Tools.cpp" />

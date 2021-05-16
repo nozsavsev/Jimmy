@@ -90,7 +90,6 @@ void window_action_t::perform()
 
 void toggle_input_blocking_t::perform()
 {
-    Jimmy_Global_properties_mutex.lock();
     {
         switch (trg)
         {
@@ -122,7 +121,6 @@ void toggle_input_blocking_t::perform()
             break;
         }
     }
-    Jimmy_Global_properties_mutex.unlock();
 
 }
 
@@ -320,7 +318,6 @@ bool LoadConfig(DWORD tID)
 
 
 
-        Jimmy_Global_properties_mutex.lock();
 
         //input filters                                                                   
         if (!strcmp(InputBlocking->valuestring, "All"))
@@ -349,7 +346,6 @@ bool LoadConfig(DWORD tID)
         else if (!strcmp(Locker->valuestring, "False"))
             Jimmy_Global_properties.LockerService = false;
 
-        Jimmy_Global_properties_mutex.unlock();
 
 
         for (int i = 0; i < cJSON_GetArraySize(Combinations); i++)

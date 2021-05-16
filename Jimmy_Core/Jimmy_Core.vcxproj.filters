@@ -36,13 +36,16 @@
     <ClCompile Include="source\Sys_Init.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\Jimmy_Core.cpp">
+    <ClCompile Include="source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\Json_Parcers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\Media_Tools.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="log.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
