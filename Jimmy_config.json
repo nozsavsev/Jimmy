@@ -3,7 +3,7 @@
 
   "MediaOverlay": "True",
   "LockerService": "True",
-  "Locker": "False",
+  "Locker": "True",
   "LockerActivateKey": "RCONTROL",
   "LockerExitKey": "Q",
 
