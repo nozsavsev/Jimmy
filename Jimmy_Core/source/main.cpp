@@ -20,7 +20,32 @@ int main(int argc, char** argv)
     Jimmy_Working = true;
     Sys_Init(argc, argv);
 
+    HKPP::Hotkey_Manager::Get_Instance()->HKPP_Init();
+    Log("HKPP inited\n");
+
+    HKPP::Hotkey_Manager::Get_Instance()->Add_Hotkey(HKPP::Hotkey_Deskriptor({ VK_LMENU , 'Q' }, Hotkey_Settings_t(
+        L"Exit jimmy",
+        [&](Hotkey_Deskriptor d) -> void {Exit_Jimmy(); },
+        NULL,
+        HKPP_BLOCK_INPUT,
+        HKPP_DENY_INJECTED)));
+    Log("exit comb added\n");
+
+    Jimmy_Global_properties.KeyboardLL_calback_uuid = HKPP::Hotkey_Manager::Get_Instance()->Add_Callback(
+        [&](int i, WPARAM w, LPARAM l, VectorEx<key_deskriptor> keydesk, bool repeated_input) ->
+
+        bool {
+            return JimmyLowLevelKeyboardProc(i, w, l, keydesk, repeated_input);
+        }
+    );
+    Log("Jimmy KeyboadHandler Added");
+
+
+    if (Load_Config())
+        Log("Config loaded\n");
+
     std::thread th(&helper_thread);
+
     gui_loop();
     th.join();
 
@@ -33,32 +58,27 @@ void helper_thread()
     HKPP::Hotkey_Manager* PInst = HKPP::Hotkey_Manager::Get_Instance();
 
     Log("Setting up hooks mouseLL\n");
-    size_t callback_Uuid = PInst->Add_Callback([&](int i, WPARAM w, LPARAM l, VectorEx<key_deskriptor> keydesk, bool repeated_input) -> bool { return JimmyLowLevelKeyboardProc(i, w, l, keydesk, repeated_input); });
     HHOOK mouse_hook_handle = SetWindowsHookExW(WH_MOUSE_LL, JimmyLowLevelMouseProc, NULL, NULL);
-    Log("MouseLL hook OK\n");
 
-    if (Load_Config())
-        Log("Config loaded\n");
-
-    HKPP::Hotkey_Manager::Get_Instance()->Add_Hotkey(HKPP::Hotkey_Deskriptor({ VK_LMENU , 'Q' }, Hotkey_Settings_t(
-        L"Exit jimmy",
-        [&](Hotkey_Deskriptor d) -> void {Exit_Jimmy(); },
-        NULL,
-        HKPP_BLOCK_INPUT,
-        HKPP_DENY_INJECTED)));
-
-    MSG msg;
-    while (GetMessageW(&msg, NULL, NULL, NULL))
+    if (mouse_hook_handle)
     {
-        TranslateMessage(&msg);
-        if (msg.message == WM_QUIT) break;
+        Log("MouseLL hook OK\n");
 
-        DispatchMessageW(&msg);
+
+
+
+
+
+        MSG msg;
+        while (GetMessageW(&msg, NULL, NULL, NULL))
+        {
+            TranslateMessage(&msg);
+            if (msg.message == WM_QUIT) break;
+
+            DispatchMessageW(&msg);
+        }
     }
 
-    PInst->Remove_Callback(callback_Uuid);
-    Log("Removing callbacks\n");
-    callback_Uuid = 0;
     UnhookWindowsHookEx(mouse_hook_handle);
     Log("Disabling hooks (mouseLL)\n");
     Log("MouseLL exit\n");

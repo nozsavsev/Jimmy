@@ -58,6 +58,8 @@ struct JimmyGlobalProps_t
 
     std::atomic < bool> Block_Injected_Mouse;
     std::atomic < bool> Block_Injected_Keyboard;
+    
+    std::atomic <DWORD> KeyboardLL_calback_uuid;
 };
 
 #define WSTR(Input) std::wstring(CA2W(Input, CP_UTF8))
