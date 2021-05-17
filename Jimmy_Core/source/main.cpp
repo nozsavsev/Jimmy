@@ -161,7 +161,7 @@ void Exit_Jimmy()
 {
     Jimmy_Working = false;
     Enable_Overlay();
-    Hotkey_Manager::Get_Instance()->HKPP_Stop();
+    Hotkey_Manager::Get_Instance()->HKPP_Stop();//will removecallback too
 
     const int ExitTimeout = 1000;
 
