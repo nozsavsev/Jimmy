@@ -32,10 +32,10 @@ void helper_thread()
     mouse_proc_thread_id.store(GetCurrentThreadId());
     HKPP::Hotkey_Manager* PInst = HKPP::Hotkey_Manager::Get_Instance();
 
-    Log("Setting up hooks (mouseLL)\n");
+    Log("Setting up hooks mouseLL\n");
     size_t callback_Uuid = PInst->Add_Callback([&](int i, WPARAM w, LPARAM l, VectorEx<key_deskriptor> keydesk, bool repeated_input) -> bool { return JimmyLowLevelKeyboardProc(i, w, l, keydesk, repeated_input); });
     HHOOK mouse_hook_handle = SetWindowsHookExW(WH_MOUSE_LL, JimmyLowLevelMouseProc, NULL, NULL);
-    Log("Mouse hook OK\n");
+    Log("MouseLL hook OK\n");
 
     if (Load_Config())
         Log("Config loaded\n");
