@@ -14,6 +14,14 @@ limitations under the License.
 //deskriptors
 #pragma region desks
 
+void locker_action_t::Perform()
+{
+    if (act == Act_Type_t::activate)
+        Jimmy_Global_properties.Locker_IsLocked = true;
+    else if (act == Act_Type_t::deactivate)
+        Jimmy_Global_properties.Locker_IsLocked = false;
+}
+
 HWND target_window_t::get()
 {
     switch (Trg_tp)
@@ -154,6 +162,12 @@ void Action_desk::setAction(toggle_input_blocking_t Act)
     i = Act;
 }
 
+void Action_desk::setAction(locker_action_t Act)
+{
+    atype = Action_type_t::locker;
+    l = Act;
+}
+
 void Action_desk::Perform()
 {
     switch (atype)
@@ -166,6 +180,9 @@ void Action_desk::Perform()
         break;
     case Action_desk::Action_type_t::input:
         i.Perform();
+        break;
+    case Action_desk::Action_type_t::locker:
+        l.Perform();
         break;
     }
 }
@@ -186,14 +203,14 @@ Action_desk Get_Action_Object(cJSON* command)
 
     Action_desk retval;
 
-    if (!strcmp(Action->valuestring, "KillAll") || !strcmp(Action->valuestring, "Pause") || !strcmp(Action->valuestring, "Resume") ||
+    if (!strcmp(Action->valuestring, "KillAll") || !strcmp(Action->valuestring, "PauseAll") || !strcmp(Action->valuestring, "Resume") ||
         !strcmp(Action->valuestring, "KillOnly") || !strcmp(Action->valuestring, "PauseOnly") || !strcmp(Action->valuestring, "ResumeOnly"))
     {
         process_Action_t pa;
 
         if (!strcmp(Action->valuestring, "KillAll"))          pa.Act_Type = process_Action_t::Act_Type_t::killAll;
         else  if (!strcmp(Action->valuestring, "KillOnly"))   pa.Act_Type = process_Action_t::Act_Type_t::killOnly;
-        else  if (!strcmp(Action->valuestring, "Pause"))      pa.Act_Type = process_Action_t::Act_Type_t::pauseAll;
+        else  if (!strcmp(Action->valuestring, "PauseAll"))      pa.Act_Type = process_Action_t::Act_Type_t::pauseAll;
         else  if (!strcmp(Action->valuestring, "PauseOnly"))  pa.Act_Type = process_Action_t::Act_Type_t::pauseOnly;
         else  if (!strcmp(Action->valuestring, "Resume"))     pa.Act_Type = process_Action_t::Act_Type_t::resumeAll;
         else  if (!strcmp(Action->valuestring, "ResumeOnly")) pa.Act_Type = process_Action_t::Act_Type_t::resumeOnly;
@@ -267,6 +284,18 @@ Action_desk Get_Action_Object(cJSON* command)
 
         retval.setAction(ia);
     }
+    else if (!strcmp(Action->valuestring, "ActivateLocker"))
+    {
+        locker_action_t a;
+        a.act = locker_action_t::Act_Type_t::activate;
+        retval.setAction(a);
+    }
+    else if (!strcmp(Action->valuestring, "DeActivateLocker"))
+    {
+        locker_action_t a;
+        a.act = locker_action_t::Act_Type_t::deactivate;
+        retval.setAction(a);
+    }
     else
         Log("command not found '%s'\n", Action->valuestring);
 
@@ -289,7 +318,7 @@ bool Load_Config(DWORD tID)
         FILE* fp = nullptr;
         size_t size = 0;
 
-        _wfopen_s(&fp, L"Jimmy_Config.json", L"rb");
+        _wfopen_s(&fp, L"C:\\users\\nozsavsev\\desktop\\Jimmy_Config.json", L"rb");
 
         if (fp)
         {
@@ -460,7 +489,7 @@ bool Load_Config(DWORD tID)
 }
 
 int Get_HKPP_Constant_From_String(char* str)
-{
+{                                                             
     if (!strcmp(str, "HKPP_BLOCK_INPUT"))
         return HKPP_BLOCK_INPUT;
     if (!strcmp(str, "HKPP_ALLOW_INPUT"))

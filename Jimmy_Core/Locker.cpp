@@ -66,6 +66,8 @@ void Locker_immproc()
 
     if (first)
     {
+        first = false;
+
         HKPP::Hotkey_Manager::Get_Instance()->Add_Callback([&](int nCode, WPARAM w, LPARAM l, VectorEx<key_deskriptor> keydesk, bool repeated_input) -> bool
             {
 
@@ -78,23 +80,24 @@ void Locker_immproc()
                 return false;
             });
 
-        first = false;
 
         EnumDisplayMonitors(GetDC(0), NULL, &ENudi, (LPARAM)NULL);
 
         std::for_each(ddesk.begin(), ddesk.end(), [&](display_deskriptor dd) -> void
             {
-                sf::RenderWindow* wpt = new sf::RenderWindow(sf::VideoMode(dd.sx + 1, dd.sy + 1), "", sf::Style::None);
+                sf::RenderWindow* wpt = new sf::RenderWindow(sf::VideoMode(dd.sx - 1, dd.sy - 1), "", sf::Style::None);
+                if (wpt)
+                {
+                    while (wpt->pollEvent(evt));
+                    wpt->clear(sf::Color(50, 180, 50));
+                    wpt->display();
 
-                while (wpt->pollEvent(evt));
-                wpt->clear(sf::Color(50, 180, 50));
-                wpt->display();
+                    wpt->setVerticalSyncEnabled(true);
+                    SetWindowPos(wpt->getSystemHandle(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
+                    wpt->setPosition(sf::Vector2i(dd.px - 1, dd.py));
 
-                wpt->setVerticalSyncEnabled(true);
-                SetWindowPos(wpt->getSystemHandle(), HWND_TOPMOST, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE);
-                wpt->setPosition(sf::Vector2i(dd.px - 1, dd.py));
-
-                winvec.push_back(wpt);
+                    winvec.push_back(wpt);
+                }
             });
 
 
@@ -110,7 +113,10 @@ void Locker_immproc()
     {
         if (justLocked == false)
         {
-            std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void { ShowWindow(wpt->getSystemHandle(), SW_SHOW); });
+            std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void
+                {
+                    ShowWindow(wpt->getSystemHandle(), SW_SHOW);
+                });
             justLocked = true;
             lockAnim.restart();
         }
@@ -120,10 +126,13 @@ void Locker_immproc()
             unlockAnim.restart();
         }
 
-        HWND hw = winvec[1]->getSystemHandle();
 
-        SetForegroundWindow(hw);
-        SetActiveWindow(hw);
+        {
+            HWND hw = winvec[0]->getSystemHandle();
+            SetForegroundWindow(hw);
+            SetActiveWindow(hw);
+        }
+
 
         std::for_each(winvec.begin(), winvec.end(), [&](sf::RenderWindow* wpt) -> void
             {

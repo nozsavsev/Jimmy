@@ -134,6 +134,14 @@ public:
 
 };
 
+class locker_action_t
+{
+public:
+    enum class Act_Type_t { activate, deactivate };
+    Act_Type_t act;
+    void Perform();
+};
+
 class toggle_input_blocking_t
 {
 public:
@@ -153,13 +161,14 @@ public:
 class Action_desk
 {
 public:
-    enum class Action_type_t { process, window, input };
+    enum class Action_type_t { process, window, input, locker};
 
 protected:
 
     process_Action_t p;
     toggle_input_blocking_t i;
     window_Action_t w;
+    locker_action_t l;
 
     Action_type_t atype;
 
@@ -171,6 +180,8 @@ public:
     void setAction(window_Action_t Act);
 
     void setAction(toggle_input_blocking_t Act);
+
+    void setAction(locker_action_t Act);
 
     void Perform();
 };

@@ -74,11 +74,6 @@ void helper_thread()
     {
         Log("MouseLL hook OK\n");
 
-
-
-
-
-
         MSG msg;
         while (GetMessageW(&msg, NULL, NULL, NULL))
         {
