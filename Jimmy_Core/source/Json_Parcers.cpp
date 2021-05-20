@@ -318,7 +318,7 @@ bool Load_Config(DWORD tID)
         FILE* fp = nullptr;
         size_t size = 0;
 
-        _wfopen_s(&fp, L"C:\\users\\nozsavsev\\desktop\\Jimmy_Config.json", L"rb");
+        _wfopen_s(&fp, L"Jimmy_Config.json", L"rb");
 
         if (fp)
         {
