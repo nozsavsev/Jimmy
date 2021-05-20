@@ -17,15 +17,16 @@ using namespace HKPP::extra;
 
 #include "cJSON.h"
 
-#include <string>
+#include <windows.h>
+#include <thread>
+#include <vector>
+#include <mutex>
+#include <algorithm>
 #include <windows.h>
 #include <atlbase.h>
-#include <atlconv.h>
-#include <ShObjIdl.h>
 #include <mmdeviceapi.h>
 #include <endpointvolume.h>
 #include <tlhelp32.h>
-#include <stdarg.h>
 
 //Media_Tools.cpp
 float Get_Volume();

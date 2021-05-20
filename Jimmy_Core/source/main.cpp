@@ -12,7 +12,6 @@ limitations under the License.
 
 #define _CRT_SECURE_NO_WARNINGS
 #include "Jimmy_Core.h"
-#include <iostream>
 
 void helper_thread();
 void gui_loop();
