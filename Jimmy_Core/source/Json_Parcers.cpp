@@ -289,7 +289,7 @@ bool Load_Config(DWORD tID)
         FILE* fp = nullptr;
         size_t size = 0;
 
-        _wfopen_s(&fp, L"C:\\users\\nozsavsev\\desktop\\Jimmy_Config.json", L"rb");
+        _wfopen_s(&fp, L"Jimmy_Config.json", L"rb");
 
         if (fp)
         {
@@ -322,16 +322,14 @@ bool Load_Config(DWORD tID)
         cJSON* LockerExitKey = cJSON_GetObjectItem(config, "LockerExitKey");
 
 
-        cJSON* AwareList = cJSON_GetObjectItem(config, "Aware");
 
-        if (!Combinations || !InputBlocking || !MediaOverlay || !LockerService || !AwareList)
+        if (!Combinations || !InputBlocking || !MediaOverlay || !LockerService)
         {
-            Log("broken config - critical pole not found\nCombinations %s\nInputBlocking %s\nMediaOverlay %s\nLocker %s\nAwareList %s\n",
+            Log("broken config - critical pole not found\nCombinations %s\nInputBlocking %s\nMediaOverlay %s\nLocker %s\n",
                 Combinations ? "OK" : "NO",
                 InputBlocking ? "OK" : "NO",
                 MediaOverlay ? "OK" : "NO",
-                Locker ? "OK" : "NO",
-                AwareList ? "OK" : "NO");
+                Locker ? "OK" : "NO");
 
             return false;
         }
@@ -413,7 +411,7 @@ bool Load_Config(DWORD tID)
 
                     if (subitem)
                     {
-                        actlist[i].actions.push_back(Get_Action_Object(subitem));
+                        actlist[actlist.size() - 1].actions.push_back(Get_Action_Object(subitem));
                         settings.userdata = &actlist;
                     }
                 }
