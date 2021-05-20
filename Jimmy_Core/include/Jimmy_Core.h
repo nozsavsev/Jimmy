@@ -69,7 +69,7 @@ struct JimmyGlobalProps_t
 
     std::atomic < bool> Block_Injected_Mouse;
     std::atomic < bool> Block_Injected_Keyboard;
-    
+
     std::atomic <DWORD> KeyboardLL_calback_uuid;
 };
 
@@ -180,7 +180,14 @@ int Get_HKPP_Constant_From_String(char* str);
 Action_desk Get_Action_Object(cJSON* command);
 bool Load_Config(DWORD tID = GetCurrentThreadId());
 
-extern VectorEx <Action_desk> Actions;
+class acta_t
+{
+public:
+    VectorEx <Action_desk> actions = VectorEx <Action_desk>();
+    size_t Uuid = 0;
+};
+
+extern VectorEx <acta_t> actlist;
 
 //Log.cpp
 void Log(const char* Log_str, ...);

@@ -172,8 +172,7 @@ void Action_desk::Perform()
 
 #pragma endregion
 
-
-VectorEx <Action_desk> Actions;
+VectorEx <acta_t> actlist;
 
 Action_desk Get_Action_Object(cJSON* command)
 {
@@ -212,7 +211,7 @@ Action_desk Get_Action_Object(cJSON* command)
             pa.Set_Target(Trgt);
         }
 
-        else if (!strcmp(type->valuestring, "KillAll"))
+        else
         {
             target_process_t Trgt;
             if (!strcmp(type->valuestring, "Path"))
@@ -276,6 +275,8 @@ Action_desk Get_Action_Object(cJSON* command)
 
 bool Load_Config(DWORD tID)
 {
+
+#pragma region File
     cJSON* config = NULL;
     Hotkey_Manager* mng = HKPP::Hotkey_Manager::Get_Instance();
     static VectorEx <size_t> uuid_list;
@@ -288,7 +289,7 @@ bool Load_Config(DWORD tID)
         FILE* fp = nullptr;
         size_t size = 0;
 
-        _wfopen_s(&fp, L"Jimmy_Config.json", L"rb");
+        _wfopen_s(&fp, L"C:\\users\\nozsavsev\\desktop\\Jimmy_Config.json", L"rb");
 
         if (fp)
         {
@@ -306,7 +307,9 @@ bool Load_Config(DWORD tID)
             fclose(fp);
         }
     }
+#pragma endregion
 
+#pragma region first init  
     if (config)
     {
         cJSON* Combinations = cJSON_GetObjectItem(config, "Combinations");
@@ -332,8 +335,6 @@ bool Load_Config(DWORD tID)
 
             return false;
         }
-
-
 
 
         //input filters                                                                   
@@ -372,7 +373,7 @@ bool Load_Config(DWORD tID)
 
         Jimmy_Global_properties.Locker_ActivateKey = StrToKey(WSTR(LockerActivateKey->valuestring));
         Jimmy_Global_properties.Locker_ExitKey = StrToKey(WSTR(LockerExitKey->valuestring));
-
+#pragma endregion
 
 
         for (int i = 0; i < cJSON_GetArraySize(Combinations); i++)
@@ -402,14 +403,19 @@ bool Load_Config(DWORD tID)
 
             settings.Name = WSTR(Name->valuestring);
 
-            for (int i = 0; i < cJSON_GetArraySize(Actions_json); i++)
+            if (cJSON_GetArraySize(Actions_json))
             {
-                cJSON* subitem = cJSON_GetArrayItem(Actions_json, i);
+                actlist.push_back(acta_t());
 
-                if (subitem)
+                for (int i = 0; i < cJSON_GetArraySize(Actions_json); i++)
                 {
-                    Actions.push_back(Get_Action_Object(subitem));
-                    settings.userdata = &Actions;
+                    cJSON* subitem = cJSON_GetArrayItem(Actions_json, i);
+
+                    if (subitem)
+                    {
+                        actlist[i].actions.push_back(Get_Action_Object(subitem));
+                        settings.userdata = &actlist;
+                    }
                 }
             }
 
@@ -418,11 +424,11 @@ bool Load_Config(DWORD tID)
 
             settings.User_Callback = [&](Hotkey_Deskriptor desk) -> void
             {
-                ((VectorEx<Action_desk>*)desk.settings.userdata)->Foreach([&](Action_desk& Act) -> void
+                ((VectorEx<acta_t>*)desk.settings.userdata)->Foreach([&](acta_t& Acta) -> void
                     {
-                        if (Act.Uuid == desk.settings.Uuid)
+                        if (Acta.Uuid == desk.settings.Uuid)
                         {
-                            Act.Perform();
+                            Acta.actions.Foreach([&](Action_desk& ac) -> void { ac.Perform(); });
                         }
                     });
             };
@@ -442,7 +448,7 @@ bool Load_Config(DWORD tID)
             }
 
             if (keys.size())
-                Actions[Actions.size() - 1].Uuid = mng->Add_Hotkey(Hotkey_Deskriptor(keys, settings));
+                actlist[actlist.size() - 1].Uuid = mng->Add_Hotkey(Hotkey_Deskriptor(keys, settings));
             Log("loaded: '%s'\n", Name->valuestring);
         }
     }

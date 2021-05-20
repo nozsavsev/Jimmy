@@ -55,10 +55,9 @@ int main(int argc, char** argv)
     if (Load_Config())
         Log("Config loaded\n");
 
-    std::thread th(&helper_thread);
-
+    //std::thread th(&helper_thread);
     gui_loop();
-    th.join();
+    //th.join();
 
     return 0;
 }
