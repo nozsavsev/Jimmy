@@ -57,12 +57,11 @@ void Log(const char* Log_str, ...)
     vfprintf(fLog, Log_str, argptr);
     va_end(argptr);
 
-    if (fLog != stderr)
     {
-        fprintf(fLog, "%s: ", buffer);
+        fprintf(stderr, "%s: ", buffer);
         va_list argptr;
         va_start(argptr, Log_str);
-        vfprintf(fLog, Log_str, argptr);
+        vfprintf(stderr, Log_str, argptr);
         va_end(argptr);
     }
 
