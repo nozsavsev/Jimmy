@@ -26,7 +26,7 @@ std::atomic<bool> Jimmy_Working = true;
 
 
 int main(int argc, char** argv)
-{
+{          
     Log("Starting Jimmy\n");
     Jimmy_Working = true;
     Sys_Init(argc, argv);

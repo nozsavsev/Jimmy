@@ -53,7 +53,6 @@ void pcolor(float c, float coff) { printf("%f -> %f\n", c, coff); }
 
 void Locker_immproc()
 {
-
     static bool first = true;
 
     static color_change_t gradi_unlock;
@@ -64,8 +63,16 @@ void Locker_immproc()
     static std::vector <sf::RenderWindow*>winvec;
     static sf::Event evt;
 
+    static sf::Font ft;
+    static sf::Text tx;
+
     if (first)
     {
+        ft.loadFromFile("C:\\WINDOWS\\Fonts\\Arial.ttf");
+
+        tx.setFont(ft);
+        tx.setCharacterSize(20);
+
         first = false;
 
         HKPP::Hotkey_Manager::Get_Instance()->Add_Callback([&](int nCode, WPARAM w, LPARAM l, VectorEx<key_deskriptor> keydesk, bool repeated_input) -> bool
@@ -77,6 +84,10 @@ void Locker_immproc()
                 if (keydesk.Contains(Jimmy_Global_properties.Locker_ExitKey.load()) && !repeated_input && w == WM_KEYDOWN)
                     Jimmy_Global_properties.Locker_IsLocked = false;
 
+
+                if (Jimmy_Global_properties.Locker_IsLocked && (((KBDLLHOOKSTRUCT*)l)->vkCode == VK_LWIN || ((KBDLLHOOKSTRUCT*)l)->vkCode == VK_RWIN))
+                    return true;
+
                 return false;
             });
 
@@ -85,7 +96,7 @@ void Locker_immproc()
 
         std::for_each(ddesk.begin(), ddesk.end(), [&](display_deskriptor dd) -> void
             {
-                sf::RenderWindow* wpt = new sf::RenderWindow(sf::VideoMode(dd.sx - 1, dd.sy - 1), "", sf::Style::None);
+                sf::RenderWindow* wpt = new sf::RenderWindow(sf::VideoMode(dd.sx + 1, dd.sy + 1), "", sf::Style::None);
                 if (wpt)
                 {
                     while (wpt->pollEvent(evt));
@@ -153,6 +164,20 @@ void Locker_immproc()
 
                     wpt->clear(gradi_unlock.getVal(cval / ANIM_TIME));
                 }
+
+
+                tx.setCharacterSize(25);
+                tx.setFillColor(sf::Color::White);
+                tx.setString(
+                    "MouseBlocking --> " + std::string(Jimmy_Global_properties.Block_Injected_Mouse ? "True\n" : "False\n") +
+                    "KeyboardBlocking --> " + std::string(Jimmy_Global_properties.Block_Injected_Keyboard ? "True\n" : "False\n") +
+                    "OverlayService --> " + std::string(Jimmy_Global_properties.Media_Overlay_Service ? "True\n" : "False\n")
+                );
+                tx.setPosition(0, 0);
+                tx.setOrigin(sf::Vector2f(0, 0));
+                tx.setPosition({ 10,10 });
+                wpt->draw(tx);
+
 
                 wpt->display();
             });
