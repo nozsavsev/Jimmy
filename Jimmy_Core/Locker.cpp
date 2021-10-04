@@ -112,11 +112,11 @@ void Locker_immproc()
             });
 
 
-        gradi_unlock.from = sf::Color(180, 50, 50);
-        gradi_unlock.to = sf::Color(50, 180, 50);
+        gradi_unlock.from = sf::Color(0, 0, 0);
+        gradi_unlock.to = sf::Color(200, 200, 200);
 
-        gradi_lock.from = sf::Color(50, 180, 50);
-        gradi_lock.to = sf::Color(180, 50, 50);
+        gradi_lock.from = sf::Color(200, 200, 200);
+        gradi_lock.to = sf::Color(0, 0, 0);
     }
 
 
